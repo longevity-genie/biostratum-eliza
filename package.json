@@ -1,26 +1,43 @@
 {
-  "name": "@fleek-platform/eliza-plugin-mcp",
-  "description": "ElizaOS plugin to integrate with MCP (Model Context Protocol) servers",
+  "name": "@longevity-genie/biostratum-mcp-plugin",
+  "description": "ElizaOS MCP plugin for biostratum - a comprehensive MCP composer and adapter solution",
   "module": "dist/index.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
-  "version": "0.0.8",
+  "version": "0.1.1",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fleek-platform/eliza-plugin-mcp.git"
+    "url": "git+https://github.com/longevity-genie/biostratum-eliza.git"
   },
+  "keywords": [
+    "elizaos",
+    "eliza",
+    "mcp", 
+    "model-context-protocol",
+    "plugin",
+    "biostratum",
+    "bioinformatics",
+    "longevity",
+    "biology",
+    "genomics",
+    "ai-agent"
+  ],
   "tags": [
     "mcp",
     "model",
     "context",
     "protocol",
-    "elizaos-plugins"
+    "elizaos-plugins",
+    "biostratum",
+    "prepackaged"
   ],
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target node --minify --treeshake",
     "types": "bunx tsc --emitDeclarationOnly --outDir ./dist",
+    "fetch-tools": "bun run scripts/fetch-tools.ts",
+    "extract-tool-names": "bun run scripts/extract-tool-names.ts",
     "check:write": "bunx @biomejs/biome check --write ./src",
     "check": "bunx @biomejs/biome check ./src",
     "ci": "bunx @biomejs/biome ci ./src",
@@ -29,7 +46,11 @@
     "version:major": "bunx bumpp major --tag -y",
     "release:patch": "bun run version:patch && git push --follow-tags",
     "release:minor": "bun run version:minor && git push --follow-tags",
-    "release:major": "bun run version:major && git push --follow-tags"
+    "release:major": "bun run version:major && git push --follow-tags",
+    "publish:npm": "bun run build && bun run types && bun publish --access public",
+    "release:publish:patch": "bun run release:patch && bun run publish:npm",
+    "release:publish:minor": "bun run release:minor && bun run publish:npm",
+    "release:publish:major": "bun run release:major && bun run publish:npm"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -38,13 +59,46 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@elizaos/core": "1.0.0-beta.7",
+    "@elizaos/core": "~1.0.6",
     "@modelcontextprotocol/sdk": "^1.7.0",
     "ajv": "^8.17.1",
     "json5": "^2.2.3"
   },
   "agentConfig": {
     "pluginType": "elizaos:plugin:1.0.0",
-    "pluginParameters": {}
-  }
+    "pluginParameters": {
+      "mcpServers": {
+        "type": "object",
+        "description": "Configuration for MCP servers",
+        "properties": {
+          "servers": {
+            "type": "object",
+            "description": "Map of server names to configurations"
+          }
+        }
+      },
+      "biostratumServers": {
+        "type": "object", 
+        "description": "Configuration for biostratum servers",
+        "properties": {
+          "biothings": {
+            "type": "object",
+            "description": "Biothings MCP server configuration"
+          },
+          "opengenes": {
+            "type": "object",
+            "description": "OpenGenes MCP server configuration"
+          },
+          "gget": {
+            "type": "object",
+            "description": "Gget MCP server configuration"
+          }
+        }
+      }
+    }
+  },
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "protobufjs"
+  ]
 }
