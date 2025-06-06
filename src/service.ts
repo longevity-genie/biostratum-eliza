@@ -9,6 +9,7 @@ import type {
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 import {
+  type BiostratumSettings,
   DEFAULT_MCP_TIMEOUT_SECONDS,
   MCP_SERVICE_NAME,
   type McpConnection,
@@ -17,6 +18,7 @@ import {
   type McpServer,
   type McpServerConfig,
   type McpSettings,
+  type McpToolFiltering,
   type SseMcpServerConfig,
   type StdioMcpServerConfig,
 } from "./types";
@@ -60,13 +62,17 @@ export class McpService extends Service {
   private async initializeMcpServers(): Promise<void> {
     try {
       const mcpSettings = this.getMcpSettings();
+      const biostratumSettings = this.getBiostratumSettings();
 
-      if (!mcpSettings || !mcpSettings.servers) {
+      // Merge server configurations
+      const allServers = this.mergeServerConfigurations(mcpSettings, biostratumSettings);
+
+      if (!allServers || Object.keys(allServers).length === 0) {
         logger.info("No MCP servers configured.");
         return;
       }
 
-      await this.updateServerConnections(mcpSettings.servers);
+      await this.updateServerConnections(allServers);
 
       const servers = this.getServers();
 
@@ -81,6 +87,89 @@ export class McpService extends Service {
 
   private getMcpSettings(): McpSettings | undefined {
     return this.runtime.getSetting("mcp") as McpSettings;
+  }
+
+  private getBiostratumSettings(): BiostratumSettings | undefined {
+    return this.runtime.getSetting("biostratum") as BiostratumSettings;
+  }
+
+  private mergeServerConfigurations(
+    mcpSettings: McpSettings | undefined,
+    biostratumSettings: BiostratumSettings | undefined
+  ): Record<string, McpServerConfig> {
+    const servers: Record<string, McpServerConfig> = {};
+
+    // Add MCP servers if they exist
+    if (mcpSettings?.servers) {
+      Object.assign(servers, mcpSettings.servers);
+    }
+
+    // Convert and add biostratum servers
+    if (biostratumSettings) {
+      const biostratumServers = this.convertBiostratumToMcp(biostratumSettings);
+      Object.assign(servers, biostratumServers);
+    }
+
+    return servers;
+  }
+
+  private convertBiostratumToMcp(
+    biostratumSettings: BiostratumSettings
+  ): Record<string, McpServerConfig> {
+    const mcpServers: Record<string, McpServerConfig> = {};
+
+    // Define server configurations with their enabled status
+    const serverConfigs = {
+      biothings: { command: "biothings-mcp", enabled: true },
+      opengenes: { command: "opengenes-mcp", enabled: true },
+      longevity: { command: "longevity-mcp", enabled: false },
+      gget: { command: "gget-mcp", enabled: true },
+      "synergy-age": { command: "synergy-age-mcp", enabled: false },
+      druginteractions: { command: "druginteractions-mcp", enabled: false },
+    };
+
+    for (const [serverName, config] of Object.entries(biostratumSettings)) {
+      const serverConfig = serverConfigs[serverName as keyof typeof serverConfigs];
+
+      if (!serverConfig) {
+        logger.warn(`Unknown biostratum server: ${serverName}`);
+        continue;
+      }
+
+      // Check if server is enabled (explicit setting overrides default)
+      const isEnabled = config.enabled !== undefined ? config.enabled : serverConfig.enabled;
+
+      if (!isEnabled) {
+        logger.info(`Biostratum server ${serverName} is disabled`);
+        continue;
+      }
+
+      // Extract tool filtering options
+      const { enabled, include, exclude, ...otherConfig } = config;
+
+      // Log tool filtering if configured
+      if (include !== undefined || exclude !== undefined) {
+        const includeInfo = include ? `include: [${include.length} tools]` : "include: all";
+        const excludeInfo = exclude ? `exclude: [${exclude.length} tools]` : "exclude: none";
+        logger.info(
+          `Biostratum server ${serverName} tool filtering - ${includeInfo}, ${excludeInfo}`
+        );
+      }
+
+      // Create MCP server configuration with tool filtering
+      mcpServers[`biostratum-${serverName}`] = {
+        type: "stdio",
+        command: "uvx",
+        args: [serverConfig.command],
+        toolFiltering: {
+          include: include || [],
+          exclude: exclude || [],
+        },
+        ...otherConfig, // Allow override of default configuration
+      };
+    }
+
+    return mcpServers;
   }
 
   private async updateServerConnections(
@@ -237,6 +326,44 @@ export class McpService extends Service {
     return this.connections.find((conn) => conn.server.name === serverName);
   }
 
+  private applyToolFiltering(
+    tools: Tool[],
+    filtering: McpToolFiltering,
+    serverName: string
+  ): Tool[] {
+    let filteredTools = [...tools];
+    const originalCount = tools.length;
+
+    // Step 1: Apply include filter
+    if (filtering.include && filtering.include.length > 0) {
+      filteredTools = filteredTools.filter((tool) => filtering.include.includes(tool.name));
+      logger.info(
+        `[${serverName}] Include filter: ${filteredTools.length}/${originalCount} tools included`
+      );
+    }
+
+    // Step 2: Apply exclude filter
+    if (filtering.exclude && filtering.exclude.length > 0) {
+      const beforeExclude = filteredTools.length;
+      filteredTools = filteredTools.filter((tool) => !filtering.exclude.includes(tool.name));
+      const excluded = beforeExclude - filteredTools.length;
+      if (excluded > 0) {
+        logger.info(
+          `[${serverName}] Exclude filter: ${excluded} tools excluded, ${filteredTools.length} remaining`
+        );
+      }
+    }
+
+    // Log if any tools were filtered
+    if (originalCount !== filteredTools.length) {
+      logger.info(
+        `[${serverName}] Tool filtering applied: ${originalCount} → ${filteredTools.length} tools`
+      );
+    }
+
+    return filteredTools;
+  }
+
   private async fetchToolsList(serverName: string): Promise<Tool[]> {
     try {
       const connection = this.getServerConnection(serverName);
@@ -246,9 +373,15 @@ export class McpService extends Service {
 
       const response = await connection.client.listTools();
 
-      const tools = (response?.tools || []).map((tool) => ({
+      let tools = (response?.tools || []).map((tool) => ({
         ...tool,
       }));
+
+      // Apply tool filtering if configured
+      const serverConfig = JSON.parse(connection.server.config) as McpServerConfig;
+      if (serverConfig.toolFiltering) {
+        tools = this.applyToolFiltering(tools, serverConfig.toolFiltering, serverName);
+      }
 
       logger.info(`Fetched ${tools.length} tools for ${serverName}`);
       for (const tool of tools) {

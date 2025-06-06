@@ -1,0 +1,39 @@
+{
+  "server": "opengenes",
+  "toolCount": 3,
+  "tools": [
+    {
+      "name": "opengenes_get_schema_info",
+      "description": "Get information about the database schema",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "opengenes_example_queries",
+      "description": "Get a list of example SQL queries",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "opengenes_db_query",
+      "description": "Query the Opengenes database that contains data about genes involved in longevity, lifespan extension experiments on model organisms, and changes in human and other organisms with aging. Before caling this tool the first time, always check tools that provide schema information and example queries.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sql": {
+            "title": "Sql",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sql"
+        ]
+      }
+    }
+  ],
+  "fetchedAt": "2025-06-06T16:18:16.369Z"
+}

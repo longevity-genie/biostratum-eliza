@@ -7,14 +7,16 @@ import { McpService } from "./service";
 const mcpPlugin: Plugin = {
   name: "mcp",
   description: "Plugin for connecting to MCP (Model Context Protocol) servers",
+  
+  // Required fields
+  actions: [callToolAction, readResourceAction],
+  providers: [provider],
+  services: [McpService],
+  evaluators: [], // Add empty array if no evaluators
 
   init: async (_config: Record<string, string>, _runtime: IAgentRuntime) => {
     logger.info("Initializing MCP plugin...");
   },
-
-  services: [McpService],
-  actions: [callToolAction, readResourceAction],
-  providers: [provider],
 };
 
 export type { McpService };

@@ -24,5 +24,7 @@
     "declaration": true,
     "outDir": "./dist",
     "rootDir": "./src"
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["scripts/**/*", "dist/**/*", "node_modules/**/*"]
 }

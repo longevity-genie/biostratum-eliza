@@ -1,0 +1,595 @@
+{
+  "server": "gget",
+  "toolCount": 19,
+  "tools": [
+    {
+      "name": "gget_search",
+      "description": "Search for genes using gene symbols, names, or synonyms.\n        \n        Use this tool FIRST when you have gene names/symbols and need to find their Ensembl IDs.\n        Returns Ensembl IDs which are required for get_gene_info and get_sequences tools.\n        \n        Args:\n            search_terms: List of gene symbols (e.g., ['TP53', 'BRCA1']) or names\n            species: Target species (e.g., 'homo_sapiens', 'mus_musculus')\n            limit: Maximum number of results per search term\n        \n        Example:\n            Input: search_terms=['BRCA1'], species='homo_sapiens'\n            Output: {'BRCA1': {'ensembl_id': 'ENSG00000012048', 'description': 'BRCA1 DNA repair...'}}\n        \n        Downstream tools that need the Ensembl IDs from this search:\n            - get_gene_info: Get detailed gene information  \n            - get_sequences: Get DNA/protein sequences\n        ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "search_terms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Search Terms",
+            "type": "array"
+          },
+          "species": {
+            "default": "homo_sapiens",
+            "title": "Species",
+            "type": "string"
+          },
+          "limit": {
+            "default": 100,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "search_terms"
+        ]
+      }
+    },
+    {
+      "name": "gget_info",
+      "description": "Get detailed information for genes using their Ensembl IDs.\n        \n        PREREQUISITE: Use search_genes first to get Ensembl IDs from gene names/symbols.\n        \n        Args:\n            ensembl_ids: List of Ensembl gene IDs (e.g., ['ENSG00000141510'])\n            verbose: Include additional annotation details\n        \n        Example workflow:\n            1. search_genes(['TP53'], 'homo_sapiens') → get Ensembl ID 'ENSG00000141510'\n            2. get_gene_info(['ENSG00000141510']) \n            \n        Example output:\n            {'ENSG00000141510': {'symbol': 'TP53', 'biotype': 'protein_coding', \n             'start': 7661779, 'end': 7687550, 'chromosome': '17'...}}\n        ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ensembl_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ensembl Ids",
+            "type": "array"
+          },
+          "verbose": {
+            "default": true,
+            "title": "Verbose",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ensembl_ids"
+        ]
+      }
+    },
+    {
+      "name": "gget_seq",
+      "description": "Fetch nucleotide or amino acid sequences for genes.\n        \n        PREREQUISITE: Use search_genes first to get Ensembl IDs from gene names/symbols.\n        \n        Args:\n            ensembl_ids: List of Ensembl gene IDs (e.g., ['ENSG00000141510'])\n            translate: If True, returns protein sequences; if False, returns DNA sequences\n            isoforms: Include alternative splice isoforms\n        \n        Example workflow for protein sequence:\n            1. search_genes(['TP53'], 'homo_sapiens') → 'ENSG00000141510'\n            2. get_sequences(['ENSG00000141510'], translate=True)\n            \n        Example output (protein):\n            {'ENSG00000141510': 'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSP...'}\n            \n        Example output (DNA):\n            {'ENSG00000141510': 'ATGGAGGAGCCGCAGTCAGATCCTAGCGTCGAGCCCCCTCTGAGTC...'}\n        \n        Downstream tools that use protein sequences:\n            - alphafold_predict: Predict 3D structure from protein sequence\n            - blast_sequence: Search for similar sequences\n        ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ensembl_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ensembl Ids",
+            "type": "array"
+          },
+          "translate": {
+            "default": false,
+            "title": "Translate",
+            "type": "boolean"
+          },
+          "isoforms": {
+            "default": false,
+            "title": "Isoforms",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ensembl_ids"
+        ]
+      }
+    },
+    {
+      "name": "gget_ref",
+      "description": "Get reference genome information from Ensembl.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "species": {
+            "default": "homo_sapiens",
+            "title": "Species",
+            "type": "string"
+          },
+          "which": {
+            "default": "all",
+            "title": "Which",
+            "type": "string"
+          },
+          "release": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Release"
+          }
+        }
+      }
+    },
+    {
+      "name": "gget_blast",
+      "description": "BLAST a nucleotide or amino acid sequence.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sequence": {
+            "title": "Sequence",
+            "type": "string"
+          },
+          "program": {
+            "default": "blastp",
+            "title": "Program",
+            "type": "string"
+          },
+          "database": {
+            "default": "nr",
+            "title": "Database",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "expect": {
+            "default": 10,
+            "title": "Expect",
+            "type": "number"
+          }
+        },
+        "required": [
+          "sequence"
+        ]
+      }
+    },
+    {
+      "name": "gget_blat",
+      "description": "Find genomic location of a sequence using BLAT.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sequence": {
+            "title": "Sequence",
+            "type": "string"
+          },
+          "seqtype": {
+            "default": "DNA",
+            "title": "Seqtype",
+            "type": "string"
+          },
+          "assembly": {
+            "default": "hg38",
+            "title": "Assembly",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sequence"
+        ]
+      }
+    },
+    {
+      "name": "gget_muscle",
+      "description": "Align multiple sequences using MUSCLE.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sequences": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sequences",
+            "type": "array"
+          },
+          "super5": {
+            "default": false,
+            "title": "Super5",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sequences"
+        ]
+      }
+    },
+    {
+      "name": "gget_diamond",
+      "description": "Align amino acid sequences to a reference using DIAMOND.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sequences": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Sequences"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "sensitivity": {
+            "default": "very-sensitive",
+            "title": "Sensitivity",
+            "type": "string"
+          },
+          "threads": {
+            "default": 1,
+            "title": "Threads",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sequences",
+          "reference"
+        ]
+      }
+    },
+    {
+      "name": "gget_archs4",
+      "description": "Get tissue expression data from ARCHS4.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gene": {
+            "title": "Gene",
+            "type": "string"
+          },
+          "which": {
+            "default": "tissue",
+            "title": "Which",
+            "type": "string"
+          },
+          "species": {
+            "default": "human",
+            "title": "Species",
+            "type": "string"
+          }
+        },
+        "required": [
+          "gene"
+        ]
+      }
+    },
+    {
+      "name": "gget_enrichr",
+      "description": "Perform functional enrichment analysis using Enrichr.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "genes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Genes",
+            "type": "array"
+          },
+          "database": {
+            "default": "KEGG_2021_Human",
+            "title": "Database",
+            "type": "string"
+          },
+          "species": {
+            "default": "human",
+            "title": "Species",
+            "type": "string"
+          }
+        },
+        "required": [
+          "genes"
+        ]
+      }
+    },
+    {
+      "name": "gget_bgee",
+      "description": "Find orthologs of a gene using Bgee database.\n        \n        PREREQUISITE: Use search_genes to get Ensembl ID first.\n        \n        Args:\n            gene_id: Ensembl gene ID (e.g., 'ENSG00000012048' for BRCA1)\n            type: Type of data ('orthologs' or 'expression')\n        \n        Example workflow:\n            1. search_genes(['BRCA1']) → 'ENSG00000012048' \n            2. bgee_orthologs('ENSG00000012048') → ortholog data\n        ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gene_id": {
+            "title": "Gene Id",
+            "type": "string"
+          },
+          "type": {
+            "default": "orthologs",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "gene_id"
+        ]
+      }
+    },
+    {
+      "name": "gget_pdb",
+      "description": "Fetch protein structure data from PDB using specific PDB IDs.\n        \n        IMPORTANT: This tool requires a specific PDB ID (e.g., '2GS6'), NOT gene names.\n        \n        For gene-to-structure workflows:\n        1. Use search_genes to get Ensembl ID\n        2. Use get_sequences with translate=True to get protein sequence  \n        3. Use alphafold_predict for structure prediction, OR\n        4. Search external databases (PDB website) for known PDB IDs, then use this tool\n        \n        Args:\n            pdb_id: Specific PDB structure ID (e.g., '2GS6', '1EGF')\n            resource: Database resource ('pdb' or 'alphafold')\n        \n        Example:\n            Input: pdb_id='2GS6'\n            Output: Structure data with coordinates, resolution, method, etc.\n            \n        Alternative workflow for gene structure prediction:\n            1. search_genes(['EGFR']) → get Ensembl ID\n            2. get_sequences([ensembl_id], translate=True) → get protein sequence\n            3. alphafold_predict(protein_sequence) → predict structure\n        ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pdb_id": {
+            "title": "Pdb Id",
+            "type": "string"
+          },
+          "resource": {
+            "default": "pdb",
+            "title": "Resource",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pdb_id"
+        ]
+      }
+    },
+    {
+      "name": "gget_alphafold",
+      "description": "Predict protein structure using AlphaFold from protein sequence.\n        \n        PREREQUISITE: Use get_sequences with translate=True to get protein sequence first.\n        \n        Workflow for gene structure prediction:\n        1. search_genes → get Ensembl ID\n        2. get_sequences with translate=True → get protein sequence\n        3. alphafold_predict → predict structure\n        \n        Args:\n            sequence: Amino acid sequence (protein, not DNA)\n            out: Optional output directory for structure files\n        \n        Example full workflow:\n            1. search_genes(['TP53']) → 'ENSG00000141510'\n            2. get_sequences(['ENSG00000141510'], translate=True) → 'MEEPQSDPSVEPPLSQ...'\n            3. alphafold_predict('MEEPQSDPSVEPPLSQ...')\n            \n        Example output:\n            AlphaFold structure prediction data with confidence scores and coordinates\n        ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sequence": {
+            "title": "Sequence",
+            "type": "string"
+          },
+          "out": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Out"
+          }
+        },
+        "required": [
+          "sequence"
+        ]
+      }
+    },
+    {
+      "name": "gget_elm",
+      "description": "Find protein interaction domains and functions in amino acid sequences.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sequence": {
+            "title": "Sequence",
+            "type": "string"
+          },
+          "sensitivity": {
+            "default": "very-sensitive",
+            "title": "Sensitivity",
+            "type": "string"
+          },
+          "threads": {
+            "default": 1,
+            "title": "Threads",
+            "type": "integer"
+          },
+          "uniprot": {
+            "default": false,
+            "title": "Uniprot",
+            "type": "boolean"
+          },
+          "expand": {
+            "default": false,
+            "title": "Expand",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sequence"
+        ]
+      }
+    },
+    {
+      "name": "gget_cosmic",
+      "description": "Search COSMIC database for cancer mutations and cancer-related data.\n        \n        Args:\n            searchterm: Gene symbol or name to search for (e.g., 'PIK3CA', 'BRCA1')\n            cosmic_tsv_path: Path to COSMIC TSV file (optional, uses default if None)\n            limit: Maximum number of results to return\n        \n        Example:\n            Input: searchterm='PIK3CA'\n            Output: Mutation data including positions, amino acid changes, cancer types, etc.\n            \n        Note: This tool accepts gene symbols directly, no need for Ensembl ID conversion.\n        ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "searchterm": {
+            "title": "Searchterm",
+            "type": "string"
+          },
+          "cosmic_tsv_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cosmic Tsv Path"
+          },
+          "limit": {
+            "default": 100,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "searchterm"
+        ]
+      }
+    },
+    {
+      "name": "gget_mutate",
+      "description": "Mutate nucleotide sequences based on specified mutations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sequences": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Sequences"
+          },
+          "mutations": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Mutations"
+          },
+          "k": {
+            "default": 30,
+            "title": "K",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sequences",
+          "mutations"
+        ]
+      }
+    },
+    {
+      "name": "gget_opentargets",
+      "description": "Explore diseases and drugs associated with a gene using Open Targets.\n        \n        PREREQUISITE: Use search_genes to get Ensembl ID first.\n        \n        Args:\n            ensembl_id: Ensembl gene ID (e.g., 'ENSG00000141510' for APOE)\n            resource: Type of information ('diseases', 'drugs', 'tractability', etc.)\n            limit: Maximum number of results (optional)\n        \n        Example workflow:\n            1. search_genes(['APOE']) → 'ENSG00000141510'\n            2. opentargets_analysis('ENSG00000141510') → disease associations\n        ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ensembl_id": {
+            "title": "Ensembl Id",
+            "type": "string"
+          },
+          "resource": {
+            "default": "diseases",
+            "title": "Resource",
+            "type": "string"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Limit"
+          }
+        },
+        "required": [
+          "ensembl_id"
+        ]
+      }
+    },
+    {
+      "name": "gget_cellxgene",
+      "description": "Query single-cell RNA-seq data from CellxGene.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gene": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Gene"
+          },
+          "tissue": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Tissue"
+          },
+          "cell_type": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cell Type"
+          },
+          "species": {
+            "default": "homo_sapiens",
+            "title": "Species",
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "gget_setup",
+      "description": "Setup databases for gget modules that require local data.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "module": {
+            "title": "Module",
+            "type": "string"
+          }
+        },
+        "required": [
+          "module"
+        ]
+      }
+    }
+  ],
+  "fetchedAt": "2025-06-06T16:18:30.537Z"
+}

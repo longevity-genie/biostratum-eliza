@@ -1,0 +1,63 @@
+{
+  "biostratum": {
+    "biothings": {
+      "enabled": true,
+      "include": [
+        "query_genes",
+        "query_many_genes",
+        "get_gene_metadata",
+        "get_gene",
+        "get_genes",
+        "query_variants",
+        "query_many_variants",
+        "get_variant",
+        "get_variants",
+        "query_chems",
+        "query_many_chemicals",
+        "get_chem",
+        "get_chems",
+        "get_taxon",
+        "get_taxons",
+        "query_taxons",
+        "query_many_taxons",
+        "download_entrez_data",
+        "perform_pairwise_alignment"
+      ],
+      "exclude": []
+    },
+    "opengenes": {
+      "enabled": true,
+      "include": [
+        "opengenes_get_schema_info",
+        "opengenes_example_queries",
+        "opengenes_db_query"
+      ],
+      "exclude": []
+    },
+    "gget": {
+      "enabled": true,
+      "include": [
+        "gget_search",
+        "gget_info",
+        "gget_seq",
+        "gget_ref",
+        "gget_blast",
+        "gget_blat",
+        "gget_muscle",
+        "gget_diamond",
+        "gget_archs4",
+        "gget_enrichr",
+        "gget_bgee",
+        "gget_pdb",
+        "gget_alphafold",
+        "gget_elm",
+        "gget_cosmic",
+        "gget_mutate",
+        "gget_opentargets",
+        "gget_cellxgene",
+        "gget_setup"
+      ],
+      "exclude": []
+    }
+  }
+}

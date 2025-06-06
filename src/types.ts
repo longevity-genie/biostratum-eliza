@@ -15,6 +15,22 @@ export const DEFAULT_MCP_TIMEOUT_SECONDS = 60000;
 export const MIN_MCP_TIMEOUT_SECONDS = 1;
 export const DEFAULT_MAX_RETRIES = 2;
 
+export interface McpToolFiltering {
+  include: string[];
+  exclude: string[];
+}
+
+export interface BiostratumServerConfig {
+  enabled?: boolean;
+  include?: string[];
+  exclude?: string[];
+  env?: Record<string, string>;
+  timeout?: number;
+  [key: string]: unknown;
+}
+
+export type BiostratumSettings = Record<string, BiostratumServerConfig>;
+
 export type StdioMcpServerConfig = {
   type: "stdio";
   command?: string;
@@ -22,12 +38,14 @@ export type StdioMcpServerConfig = {
   env?: Record<string, string>;
   cwd?: string;
   timeoutInMillis?: number;
+  toolFiltering?: McpToolFiltering;
 };
 
 export type SseMcpServerConfig = {
   type: "sse";
   url: string;
   timeout?: number;
+  toolFiltering?: McpToolFiltering;
 };
 
 export type McpServerConfig = StdioMcpServerConfig | SseMcpServerConfig;

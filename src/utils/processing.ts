@@ -1,5 +1,6 @@
 import {
   type Content,
+  ContentType,
   type HandlerCallback,
   type IAgentRuntime,
   type Media,
@@ -12,6 +13,26 @@ import { type State, composePromptFromState } from "@elizaos/core";
 import { resourceAnalysisTemplate } from "../templates/resourceAnalysisTemplate";
 import { toolReasoningTemplate } from "../templates/toolReasoningTemplate";
 import { createMcpMemory } from "./mcp";
+
+/**
+ * Maps MIME types to ElizaOS ContentType enum values
+ */
+function getContentTypeFromMimeType(mimeType: string): ContentType {
+  if (mimeType.startsWith("image/")) {
+    return ContentType.IMAGE;
+  }
+  if (mimeType.startsWith("video/")) {
+    return ContentType.VIDEO;
+  }
+  if (mimeType.startsWith("audio/")) {
+    return ContentType.AUDIO;
+  }
+  if (mimeType.includes("pdf") || mimeType.includes("document") || mimeType.includes("text/")) {
+    return ContentType.DOCUMENT;
+  }
+  // Default to DOCUMENT for unknown types
+  return ContentType.DOCUMENT;
+}
 
 export function processResourceResult(
   result: {
@@ -73,7 +94,7 @@ export function processToolResult(
     } else if (content.type === "image") {
       hasAttachments = true;
       attachments.push({
-        contentType: content.mimeType,
+        contentType: content.mimeType ? getContentTypeFromMimeType(content.mimeType) : ContentType.IMAGE,
         url: `data:${content.mimeType};base64,${content.data}`,
         id: createUniqueUuid(runtime, messageEntityId),
         title: "Generated image",
