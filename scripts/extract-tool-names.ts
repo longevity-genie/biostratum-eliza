@@ -69,6 +69,7 @@ async function main() {
     if (serverName === 'biothings') configName = 'biothings';
     else if (serverName === 'opengenes') configName = 'opengenes';  
     else if (serverName === 'gget') configName = 'gget';
+    else if (serverName === 'synergy-age') configName = 'synergy-age';
 
     biostratumConfig[configName] = {
       enabled: true,

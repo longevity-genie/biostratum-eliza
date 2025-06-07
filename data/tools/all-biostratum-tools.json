@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2025-06-06T16:18:30.538Z",
+  "fetchedAt": "2025-06-07T01:23:38.773Z",
   "servers": [
     {
       "server": "biothings",
@@ -1054,7 +1054,7 @@
           }
         }
       ],
-      "fetchedAt": "2025-06-06T16:18:15.030Z"
+      "fetchedAt": "2025-06-07T01:23:31.471Z"
     },
     {
       "server": "opengenes",
@@ -1093,7 +1093,7 @@
           }
         }
       ],
-      "fetchedAt": "2025-06-06T16:18:16.369Z"
+      "fetchedAt": "2025-06-07T01:23:32.905Z"
     },
     {
       "server": "gget",
@@ -1688,7 +1688,46 @@
           }
         }
       ],
-      "fetchedAt": "2025-06-06T16:18:30.537Z"
+      "fetchedAt": "2025-06-07T01:23:35.145Z"
+    },
+    {
+      "server": "synergy-age",
+      "toolCount": 3,
+      "tools": [
+        {
+          "name": "synergyage_get_schema_info",
+          "description": "Get comprehensive information about the SynergyAge database schema including table structures, column descriptions, enumerations, and critical query guidelines for genetic synergy, epistasis, and aging research data.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "synergyage_example_queries",
+          "description": "Get comprehensive example SQL queries with patterns and best practices for the SynergyAge database, including gene searching, interaction analysis, synergistic/antagonistic relationships, and proper result ordering.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "synergyage_db_query",
+          "description": "Query the SynergyAge database that contains genetic synergy, epistasis, and aging research data with experimental lifespan effects from model organisms. Before calling this tool the first time, always check tools that provide schema information and example queries.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "sql": {
+                "title": "Sql",
+                "type": "string"
+              }
+            },
+            "required": [
+              "sql"
+            ]
+          }
+        }
+      ],
+      "fetchedAt": "2025-06-07T01:23:38.772Z"
     }
   ]
 }

@@ -187,7 +187,7 @@ export function buildMcpProviderData(servers: McpServer[]): McpProvider {
 
         textContent += `- **${tool.name}**: ${tool.description || "No description available"}\n`;
         if (tool.inputSchema?.properties) {
-          textContent += `  Parameters: ${JSON.stringify(tool.inputSchema.properties)}\n`;
+          textContent += `  Arguments: ${JSON.stringify(tool.inputSchema.properties)}\n`;
         }
       }
       textContent += "\n";

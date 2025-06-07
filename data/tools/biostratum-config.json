@@ -58,6 +58,15 @@
         "gget_setup"
       ],
       "exclude": []
+    },
+    "synergy-age": {
+      "enabled": true,
+      "include": [
+        "synergyage_get_schema_info",
+        "synergyage_example_queries",
+        "synergyage_db_query"
+      ],
+      "exclude": []
     }
   }
 }

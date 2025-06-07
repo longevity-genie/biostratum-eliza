@@ -124,7 +124,7 @@ export class McpService extends Service {
       opengenes: { command: "opengenes-mcp", enabled: true },
       longevity: { command: "longevity-mcp", enabled: false },
       gget: { command: "gget-mcp", enabled: true },
-      "synergy-age": { command: "synergy-age-mcp", enabled: false },
+      "synergy-age": { command: "synergy-age-mcp", enabled: true },
       druginteractions: { command: "druginteractions-mcp", enabled: false },
     };
 

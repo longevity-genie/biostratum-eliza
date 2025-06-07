@@ -79,13 +79,14 @@ For easier setup with biostratum-compatible servers:
     "biostratum": {
       "biothings": {},
       "opengenes": {},
-      "gget": {}
+      "gget": {},
+      "synergy-age": {}
     }
   }
 }
 ```
 
-This automatically configures biostratum MCP servers using `uvx`. All three servers (biothings, opengenes, gget) are enabled by default with all their tools available. You can also mix both configurations - biostratum and mcp servers will be merged.
+This automatically configures biostratum MCP servers using `uvx`. All four ready servers (biothings, opengenes, gget, synergy-age) are enabled by default with all their tools available. You can also mix both configurations - biostratum and mcp servers will be merged.
 
 ## 📦 Prerequisites for Biostratum Servers
 
@@ -150,6 +151,9 @@ The `biostratum` section provides simplified configuration for biostratum-compat
       "gget": {
         "include": ["gget_search", "gget_info", "gget_seq", "gget_blast", "gget_alphafold"] // Popular genomics tools
       },
+      "synergy-age": {
+        "include": ["synergyage_get_schema_info", "synergyage_example_queries"] // Schema and examples only
+      },
       "longevity": {
         "enabled": false  // WIP server, disabled by default
       }
@@ -166,11 +170,11 @@ The `biostratum` section provides simplified configuration for biostratum-compat
 | `opengenes`        | ✅ Ready    | 3     | Gene information related to longevity and aging research | `uvx opengenes-mcp`          |
 | `gget`             | ✅ Ready    | 19    | Comprehensive genomics toolkit (search, sequences, BLAST, structure prediction) | `uvx gget-mcp`               |
 | `longevity`        | 🚧 WIP      | -     | Longevity research data and interventions             | `uvx longevity-mcp`          |
-| `synergy-age`      | 🚧 WIP      | -     | Aging synergy data and interactions                   | `uvx synergy-age-mcp`        |
+| `synergy-age`      | ✅ Ready    | 3     | Database of synergistic and antagonistic lifespan effects of genetic interventions in model organisms | `uvx synergy-age-mcp`        |
 | `druginteractions` | 🚧 WIP      | -     | Drug interaction data and analysis                    | `uvx druginteractions-mcp`   |
 
 **Note**: 
-- ✅ **Ready** servers are enabled by default and fully functional (total: 41 tools)
+- ✅ **Ready** servers are enabled by default and fully functional (total: 44 tools)
 - 🚧 **WIP** servers are disabled by default and still in development. Set `"enabled": true` to use them.
 
 ##### Detailed Tool Breakdown
@@ -195,6 +199,20 @@ The `biostratum` section provides simplified configuration for biostratum-compat
 - Structure: `gget_alphafold`, `gget_pdb`
 - Disease/Drugs: `gget_cosmic`, `gget_opentargets`
 - Utilities: `gget_mutate`, `gget_setup`
+
+**SynergyAge Server (3 tools):**
+- `synergyage_get_schema_info`: Get database schema information for genetic synergy data
+- `synergyage_example_queries`: Get example SQL queries for synergy/epistasis analysis
+- `synergyage_db_query`: Query database of synergistic and antagonistic lifespan effects from genetic interventions
+
+The [SynergyAge database](https://www.synergyage.info/) contains curated information about synergistic and antagonistic lifespan effects:
+- **1,790 mutants** with at least 2 genetic interventions across 3 model organisms
+- **589 unique genes** with **6,967 lifespan values** from peer-reviewed literature
+- **C. elegans**: 1,727 gene combinations with 6,635 lifespan values
+- **D. melanogaster**: 27 gene combinations with 185 lifespan values  
+- **M. musculus**: 36 gene combinations with 147 lifespan values
+- Various intervention types: mutations, RNA interference, overexpression
+- Helps determine if lifespan determinant effects are additive or involve complex genetic interactions
 
 Each server supports multiple running modes:
 - **STDIO Mode** (default): `uvx <server-name>-mcp` - Used by this plugin
@@ -227,6 +245,9 @@ You can control which tools are available from each server using include/exclude
   },
   "gget": {
     "include": ["gget_search", "gget_info", "gget_seq", "gget_alphafold"]  // Core genomics workflow tools
+  },
+  "synergy-age": {
+    "include": ["synergyage_get_schema_info", "synergyage_example_queries"]  // Schema and examples only
   }
 }
 ```
@@ -332,6 +353,7 @@ Here's a complete example configuration with multiple MCP servers using both tra
       "gget": {
         "include": ["gget_search", "gget_info", "gget_seq", "gget_blast", "gget_alphafold"]
       },
+      "synergy-age": {},
       "longevity": {
         "enabled": true
       }
@@ -356,6 +378,9 @@ You can also use only biostratum configuration:
       },
       "gget": {
         "include": ["gget_search", "gget_info", "gget_seq", "gget_blast", "gget_alphafold", "gget_cosmic", "gget_opentargets"]
+      },
+      "synergy-age": {
+        "include": ["synergyage_get_schema_info", "synergyage_db_query"]
       }
     }
   }
@@ -387,18 +412,6 @@ Thanks for considering contributing to our project!
 4. Commit your changes using conventional commits.
 5. Push to your fork and submit a pull request.
 
-### Commit Guidelines
-
-We use [Conventional Commits](https://www.conventionalcommits.org/) for our commit messages:
-
-- `test`: 💍 Adding missing tests
-- `feat`: 🎸 A new feature
-- `fix`: 🐛 A bug fix
-- `chore`: 🤖 Build process or auxiliary tool changes
-- `docs`: ✏️ Documentation only changes
-- `refactor`: 💡 A code change that neither fixes a bug or adds a feature
-- `style`: 💄 Markup, white-space, formatting, missing semi-colons...
-
 ## 📄 License
 
-This plugin is released under the same license as ElizaOS.
+This plugin is released under the same MIT license as ElizaOS.

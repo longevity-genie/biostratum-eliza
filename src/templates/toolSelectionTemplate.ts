@@ -19,7 +19,7 @@ CRITICAL INSTRUCTIONS:
    WRONG: "toolName": "getFileContents" or "get-file-contents" or any variation
 4. Identify the user's core information need or task
 5. Select the most appropriate tool based on its capabilities and the request
-6. For each required parameter, EXTRACT ACTUAL VALUES FROM THE CONVERSATION CONTEXT
+6. For each required argument, EXTRACT ACTUAL VALUES FROM THE CONVERSATION CONTEXT
    DO NOT use placeholder values like "octocat" or "Hello-World" unless explicitly mentioned by the user
 7. If no tool seems appropriate, output {"noToolAvailable": true}
 
@@ -29,9 +29,10 @@ STRICT FORMAT REQUIREMENTS:
 - NO code block formatting (NO backticks or \`\`\`)
 - NO comments (NO // or /* */)
 - NO placeholders like "replace with...", "example", "your...", "actual", etc.
-- Every parameter value must be a concrete, usable value (not instructions to replace)
+- Every argument value must be a concrete, usable value (not instructions to replace)
 - Use proper JSON syntax with double quotes for strings
 - Use proper types: strings in quotes, numbers without quotes, booleans as true/false
+- ALWAYS use "arguments" as the key for tool inputs (NOT "parameters")
 - NO explanatory text before or after the JSON object
 
 EXAMPLE FOR GITHUB FILE REQUEST:

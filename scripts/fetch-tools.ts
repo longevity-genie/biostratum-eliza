@@ -47,6 +47,11 @@ const servers: ServerConfig[] = [
     name: "gget",
     command: "uvx", 
     args: ["gget-mcp"]
+  },
+  {
+    name: "synergy-age",
+    command: "uvx",
+    args: ["synergy-age-mcp"]
   }
 ];
 
