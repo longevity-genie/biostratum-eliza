@@ -16,7 +16,21 @@ This plugin allows your ElizaOS agents to access multiple MCP servers simultaneo
 
 ## 📦 Installation
 
-Install the plugin in your ElizaOS project:
+### Option 1: ElizaOS v1.0+ (Recommended)
+
+Use the ElizaOS CLI for the simplest setup:
+
+```bash
+# Install the plugin
+elizaos plugins add @longevity-genie/biostratum-mcp-plugin
+
+# Start your agent with a character configuration
+elizaos agent start --path bio-gagarin.json
+```
+
+### Option 2: Traditional Package Manager Installation
+
+Install the plugin directly in your ElizaOS project:
 
 - **npm**
 

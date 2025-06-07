@@ -51,18 +51,48 @@ export const agingResearchAction: Action = {
   description: "Biostratum Aging Research - " + DOMAIN_DESCRIPTIONS.agingResearch,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
+    logger.info("🕰️ [VALIDATION] Starting aging research action validation");
+    
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
-    if (!mcpService) return false;
+    if (!mcpService) {
+      logger.warn("🕰️ [VALIDATION] MCP service not available - validation failed");
+      return false;
+    }
+    logger.info("🕰️ [VALIDATION] MCP service found");
 
     // Check if any servers are connected
     const servers = mcpService.getServers();
-    if (servers.length === 0 || !servers.some(server => server.status === "connected")) {
+    logger.info(`🕰️ [VALIDATION] Found ${servers.length} MCP servers`);
+    
+    if (servers.length === 0) {
+      logger.warn("🕰️ [VALIDATION] No MCP servers found - validation failed");
+      return false;
+    }
+
+    const connectedServers = servers.filter(server => server.status === "connected");
+    logger.info(`🕰️ [VALIDATION] Connected servers: ${connectedServers.length}/${servers.length}`);
+    
+    for (const server of servers) {
+      logger.info(`🕰️ [VALIDATION] Server "${server.name || 'unnamed'}" status: ${server.status}`);
+    }
+
+    if (!servers.some(server => server.status === "connected")) {
+      logger.warn("🕰️ [VALIDATION] No connected MCP servers - validation failed");
       return false;
     }
 
     // 🕰️ Check if this domain has any available tools
     const fullMcpProvider = mcpService.getProviderData();
-    return isDomainAvailable(fullMcpProvider, "agingResearch");
+    logger.info("🕰️ [VALIDATION] Retrieved MCP provider data, checking domain availability");
+    
+    const domainAvailable = isDomainAvailable(fullMcpProvider, "agingResearch");
+    logger.info(`🕰️ [VALIDATION] Aging research domain available: ${domainAvailable}`);
+    
+    if (!domainAvailable) {
+      logger.warn("🕰️ [VALIDATION] No aging research tools available - validation failed");
+    }
+    
+    return domainAvailable;
   },
 
   handler: async (

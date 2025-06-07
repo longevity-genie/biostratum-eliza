@@ -94,37 +94,99 @@ export function filterProviderForDomain(
   mcpProvider: McpProvider,
   domain: keyof DomainToolLists
 ): McpProvider {
+  console.log(`🔧 [FILTER] Starting filter for domain: ${domain}`);
+  
   const domainTools = DOMAIN_TOOLS[domain];
+  console.log(`🔧 [FILTER] Domain tools to match (${domainTools.length}):`, domainTools);
   
   // Deep clone the provider to avoid mutations
   const filteredProvider = JSON.parse(JSON.stringify(mcpProvider));
+  console.log(`🔧 [FILTER] Cloned provider data keys:`, Object.keys(filteredProvider.data || {}));
   
   // Filter the data.mcp object to only include servers that have tools in this domain
   if (filteredProvider.data?.mcp && typeof filteredProvider.data.mcp === 'object') {
     const mcpData = filteredProvider.data.mcp as Record<string, any>;
+    console.log(`🔧 [FILTER] Processing ${Object.keys(mcpData).length} servers:`, Object.keys(mcpData));
+    
+    const serversToRemove: string[] = [];
     
     for (const serverName of Object.keys(mcpData)) {
       const server = mcpData[serverName];
-      if (server?.tools && Array.isArray(server.tools)) {
-        // Filter tools to only those in the domain
-        const filteredTools = server.tools.filter((tool: any) => 
-          domainTools.includes(tool.name)
-        );
-        
-        if (filteredTools.length === 0) {
-          // Remove server if no tools match this domain
-          delete mcpData[serverName];
+      console.log(`🔧 [FILTER] Processing server "${serverName}"`);
+      
+      if (server?.tools) {
+        if (Array.isArray(server.tools)) {
+          // Handle array format (legacy support)
+          const originalTools = server.tools.map((tool: any) => tool.name);
+          console.log(`🔧 [FILTER] Server "${serverName}" original tools (${originalTools.length}) [array]:`, originalTools);
+          
+          // Filter tools to only those in the domain
+          const filteredTools = server.tools.filter((tool: any) => {
+            const isIncluded = domainTools.includes(tool.name);
+            console.log(`🔧 [FILTER] Tool "${tool.name}" included: ${isIncluded}`);
+            return isIncluded;
+          });
+          
+          console.log(`🔧 [FILTER] Server "${serverName}" filtered tools (${filteredTools.length}):`, filteredTools.map((t: any) => t.name));
+          
+          if (filteredTools.length === 0) {
+            console.log(`🔧 [FILTER] Removing server "${serverName}" - no matching tools`);
+            serversToRemove.push(serverName);
+          } else {
+            console.log(`🔧 [FILTER] Keeping server "${serverName}" with ${filteredTools.length} filtered tools`);
+            server.tools = filteredTools;
+          }
+        } else if (typeof server.tools === 'object') {
+          // Handle object/record format (current implementation)
+          const originalTools = Object.keys(server.tools);
+          console.log(`🔧 [FILTER] Server "${serverName}" original tools (${originalTools.length}) [object]:`, originalTools);
+          
+          // Filter tools to only those in the domain
+          const filteredToolsObj: Record<string, any> = {};
+          let matchingToolsCount = 0;
+          
+          for (const toolName of originalTools) {
+            const isIncluded = domainTools.includes(toolName);
+            console.log(`🔧 [FILTER] Tool "${toolName}" included: ${isIncluded}`);
+            if (isIncluded) {
+              filteredToolsObj[toolName] = server.tools[toolName];
+              matchingToolsCount++;
+            }
+          }
+          
+          console.log(`🔧 [FILTER] Server "${serverName}" filtered tools (${matchingToolsCount}):`, Object.keys(filteredToolsObj));
+          
+          if (matchingToolsCount === 0) {
+            console.log(`🔧 [FILTER] Removing server "${serverName}" - no matching tools`);
+            serversToRemove.push(serverName);
+          } else {
+            console.log(`🔧 [FILTER] Keeping server "${serverName}" with ${matchingToolsCount} filtered tools`);
+            server.tools = filteredToolsObj;
+          }
         } else {
-          // Update server with filtered tools
-          server.tools = filteredTools;
+          console.log(`🔧 [FILTER] Server "${serverName}" has tools in unexpected format (${typeof server.tools}) - removing`);
+          serversToRemove.push(serverName);
         }
+      } else {
+        console.log(`🔧 [FILTER] Server "${serverName}" has no tools - removing`);
+        serversToRemove.push(serverName);
       }
     }
+    
+    // Remove servers that don't have matching tools
+    for (const serverName of serversToRemove) {
+      delete mcpData[serverName];
+    }
+    
+    console.log(`🔧 [FILTER] Final filtered servers:`, Object.keys(mcpData));
+  } else {
+    console.log(`🔧 [FILTER] No MCP data found in provider`);
   }
 
   // Update the text representation to reflect filtered tools
   const totalTools = domainTools.length;
   filteredProvider.text = `Available ${domain} tools (${totalTools} tools total): ${domainTools.join(', ')}`;
+  console.log(`🔧 [FILTER] Updated provider text:`, filteredProvider.text);
 
   return filteredProvider;
 }
@@ -149,19 +211,103 @@ export function isDomainAvailable(
   mcpProvider: McpProvider,
   domain: keyof DomainToolLists
 ): boolean {
+  console.log(`🔍 [DOMAIN_CHECK] Checking availability for domain: ${domain}`);
+  
+  // Basic validation of provider structure
+  if (!mcpProvider) {
+    console.log(`🔍 [DOMAIN_CHECK] ERROR: mcpProvider is null/undefined`);
+    return false;
+  }
+  
+  if (!mcpProvider.data && !mcpProvider.values) {
+    console.log(`🔍 [DOMAIN_CHECK] ERROR: mcpProvider has no data or values`);
+    return false;
+  }
+  
+  // Log the expected tools for this domain
+  const expectedTools = DOMAIN_TOOLS[domain];
+  console.log(`🔍 [DOMAIN_CHECK] Expected ${domain} tools (${expectedTools.length}):`, expectedTools);
+  
+  // Log the original provider structure
+  console.log(`🔍 [DOMAIN_CHECK] Original provider data keys:`, Object.keys(mcpProvider.data || {}));
+  console.log(`🔍 [DOMAIN_CHECK] Original provider values keys:`, Object.keys(mcpProvider.values || {}));
+  console.log(`🔍 [DOMAIN_CHECK] Provider text:`, mcpProvider.text);
+  
+  if (mcpProvider.data?.mcp) {
+    const mcpData = mcpProvider.data.mcp as Record<string, any>;
+    console.log(`🔍 [DOMAIN_CHECK] Original MCP servers in data:`, Object.keys(mcpData));
+    
+    // Log all available tools across all servers
+    let allTools: string[] = [];
+    for (const serverName of Object.keys(mcpData)) {
+      const server = mcpData[serverName];
+      console.log(`🔍 [DOMAIN_CHECK] Server "${serverName}" structure:`, {
+        keys: Object.keys(server || {}),
+        status: server?.status,
+        toolsType: typeof server?.tools,
+        toolsIsArray: Array.isArray(server?.tools),
+        toolsKeys: server?.tools ? Object.keys(server.tools) : 'no tools'
+      });
+      
+      if (server?.tools) {
+        if (Array.isArray(server.tools)) {
+          // Tools as array (expected by filtering logic)
+          const serverTools = server.tools.map((tool: any) => tool.name);
+          allTools.push(...serverTools);
+          console.log(`🔍 [DOMAIN_CHECK] Server "${serverName}" has ${serverTools.length} tools (array):`, serverTools);
+        } else if (typeof server.tools === 'object') {
+          // Tools as object/record (actual structure from buildMcpProviderData)
+          const serverTools = Object.keys(server.tools);
+          allTools.push(...serverTools);
+          console.log(`🔍 [DOMAIN_CHECK] Server "${serverName}" has ${serverTools.length} tools (object):`, serverTools);
+        } else {
+          console.log(`🔍 [DOMAIN_CHECK] Server "${serverName}" has tools in unexpected format:`, typeof server.tools);
+        }
+      } else {
+        console.log(`🔍 [DOMAIN_CHECK] Server "${serverName}" has no tools`);
+      }
+    }
+    console.log(`🔍 [DOMAIN_CHECK] All available tools (${allTools.length}):`, allTools);
+    
+    // Check which expected tools are actually available
+    const availableExpectedTools = expectedTools.filter(tool => allTools.includes(tool));
+    console.log(`🔍 [DOMAIN_CHECK] Available expected tools (${availableExpectedTools.length}):`, availableExpectedTools);
+    const missingTools = expectedTools.filter(tool => !allTools.includes(tool));
+    console.log(`🔍 [DOMAIN_CHECK] Missing expected tools (${missingTools.length}):`, missingTools);
+  }
+  
   const domainProvider = filterProviderForDomain(mcpProvider, domain);
+  console.log(`🔍 [DOMAIN_CHECK] After filtering, provider text:`, domainProvider.text);
   
   // Count total tools available in this domain
   let totalDomainTools = 0;
   if (domainProvider.data?.mcp && typeof domainProvider.data.mcp === 'object') {
     const mcpData = domainProvider.data.mcp as Record<string, any>;
+    console.log(`🔍 [DOMAIN_CHECK] Filtered MCP servers:`, Object.keys(mcpData));
+    
     for (const serverName of Object.keys(mcpData)) {
       const server = mcpData[serverName];
-      if (server?.tools && Array.isArray(server.tools)) {
-        totalDomainTools += server.tools.length;
+      if (server?.tools) {
+        if (Array.isArray(server.tools)) {
+          const serverToolCount = server.tools.length;
+          const serverToolNames = server.tools.map((tool: any) => tool.name);
+          console.log(`🔍 [DOMAIN_CHECK] Filtered server "${serverName}" has ${serverToolCount} matching tools [array]:`, serverToolNames);
+          totalDomainTools += serverToolCount;
+        } else if (typeof server.tools === 'object') {
+          const serverToolNames = Object.keys(server.tools);
+          const serverToolCount = serverToolNames.length;
+          console.log(`🔍 [DOMAIN_CHECK] Filtered server "${serverName}" has ${serverToolCount} matching tools [object]:`, serverToolNames);
+          totalDomainTools += serverToolCount;
+        }
       }
     }
+  } else {
+    console.log(`🔍 [DOMAIN_CHECK] No MCP data found in filtered provider`);
   }
 
-  return totalDomainTools > 0;
+  console.log(`🔍 [DOMAIN_CHECK] Total domain tools found: ${totalDomainTools}`);
+  const isAvailable = totalDomainTools > 0;
+  console.log(`🔍 [DOMAIN_CHECK] Domain ${domain} available: ${isAvailable}`);
+  
+  return isAvailable;
 } 
