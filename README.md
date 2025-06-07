@@ -2,6 +2,9 @@
 
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-blue.svg)](https://conventionalcommits.org)
 
+![Gagarin at Work](gagarin_at_work.png)
+*Bio-Gagarin character with biostratum plugin working in ElizaOS native chat*
+
 This plugin integrates the Model Context Protocol (MCP) with ElizaOS, allowing agents to connect to multiple MCP servers and use their resources, prompts, and tools. It includes specialized support for biostratum servers that provide access to biological and longevity research data.
 
 ## 🔍 What is MCP?
