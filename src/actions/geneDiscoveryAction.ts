@@ -37,18 +37,18 @@ function createToolSelectionPrompt(
 import { composePromptFromState } from "@elizaos/core";
 
 export const geneDiscoveryAction: Action = {
-  name: "GENE_DISCOVERY",
+  name: "GENE_DISCOVERY_TOOL_CALL",
   similes: [
-    "SEARCH_GENES",
-    "FIND_GENES", 
-    "LOOKUP_GENES",
-    "GENE_SEARCH",
-    "GENE_INFO",
-    "GENE_LOOKUP",
-    "DISCOVER_GENES",
-    "QUERY_GENES"
+    "SEARCH_GENES_TOOL_CALL",
+    "FIND_GENES_TOOL_CALL", 
+    "LOOKUP_GENES_TOOL_CALL",
+    "GENE_SEARCH_TOOL_CALL",
+    "GENE_INFO_TOOL_CALL",
+    "GENE_LOOKUP_TOOL_CALL",
+    "DISCOVER_GENES_TOOL_CALL",
+    "QUERY_GENES_TOOL_CALL"
   ],
-  description: DOMAIN_DESCRIPTIONS.geneDiscovery,
+  description: "Biostratum Gene Discovery - " + DOMAIN_DESCRIPTIONS.geneDiscovery,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
@@ -72,7 +72,7 @@ export const geneDiscoveryAction: Action = {
     _options?: { [key: string]: unknown },
     callback?: HandlerCallback
   ): Promise<boolean> => {
-    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "MCP"]);
+    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "BIOSTRATUM"]);
 
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
@@ -165,14 +165,14 @@ export const geneDiscoveryAction: Action = {
         name: "{{assistant}}",
         content: {
           text: "I'll help you find information about the BRCA1 gene. Let me search through our gene databases...",
-          actions: ["GENE_DISCOVERY"],
+          actions: ["GENE_DISCOVERY_TOOL_CALL"],
         },
       },
       {
         name: "{{assistant}}",
         content: {
           text: "I found comprehensive information about BRCA1:\n\n**Gene Information:**\n- Symbol: BRCA1\n- Name: BRCA1 DNA repair associated\n- Ensembl ID: ENSG00000012048\n- Location: Chromosome 17 (17q21.31)\n- Type: Protein coding gene\n\n**Function:**\nBRCA1 encodes a protein involved in DNA repair and is associated with hereditary breast and ovarian cancer syndrome. Mutations in this gene significantly increase the risk of developing breast and ovarian cancers.",
-          actions: ["GENE_DISCOVERY"],
+          actions: ["GENE_DISCOVERY_TOOL_CALL"],
         },
       },
     ],

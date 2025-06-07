@@ -37,18 +37,18 @@ function createToolSelectionPrompt(
 import { composePromptFromState } from "@elizaos/core";
 
 export const agingResearchAction: Action = {
-  name: "AGING_RESEARCH",
+  name: "AGING_RESEARCH_TOOL_CALL",
   similes: [
-    "LONGEVITY_RESEARCH",
-    "AGING_GENES", 
-    "LIFESPAN_ANALYSIS",
-    "SYNERGY_AGE",
-    "OPENGENES",
-    "AGING_INTERVENTIONS",
-    "GENETIC_SYNERGY",
-    "LONGEVITY_DATABASE"
+    "LONGEVITY_RESEARCH_TOOL_CALL",
+    "AGING_GENES_TOOL_CALL", 
+    "LIFESPAN_ANALYSIS_TOOL_CALL",
+    "SYNERGY_AGE_TOOL_CALL",
+    "OPENGENES_TOOL_CALL",
+    "AGING_INTERVENTIONS_TOOL_CALL",
+    "GENETIC_SYNERGY_TOOL_CALL",
+    "LONGEVITY_DATABASE_TOOL_CALL"
   ],
-  description: DOMAIN_DESCRIPTIONS.agingResearch,
+  description: "Biostratum Aging Research - " + DOMAIN_DESCRIPTIONS.agingResearch,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
@@ -72,7 +72,7 @@ export const agingResearchAction: Action = {
     _options?: { [key: string]: unknown },
     callback?: HandlerCallback
   ): Promise<boolean> => {
-    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "MCP"]);
+    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "BIOSTRATUM"]);
 
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
@@ -165,14 +165,14 @@ export const agingResearchAction: Action = {
         name: "{{assistant}}",
         content: {
           text: "I'll search our aging research databases for genes that affect lifespan in model organisms. Let me check OpenGenes and SynergyAge databases...",
-          actions: ["AGING_RESEARCH"],
+          actions: ["AGING_RESEARCH_TOOL_CALL"],
         },
       },
       {
         name: "{{assistant}}",
         content: {
           text: "I found extensive data on lifespan-affecting genes from aging research databases:\n\n**Key Longevity Genes:**\n- **daf-2** (C. elegans): Insulin/IGF-1 receptor, 2-fold lifespan extension\n- **age-1** (C. elegans): PI3K catalytic subunit, significant lifespan increase\n- **sir2** (S. cerevisiae): Sirtuin deacetylase, caloric restriction mimetic\n- **foxo** (Drosophila): Transcription factor, stress resistance\n- **p53** (Multiple species): Tumor suppressor, aging modulator\n\n**Synergistic Interactions:**\n- daf-2 + daf-16: Synergistic lifespan extension\n- sir2 + caloric restriction: Enhanced longevity effects\n- foxo + autophagy genes: Improved stress resistance\n\n**Research Context:**\nThese genes are part of conserved aging pathways including insulin/IGF-1 signaling, mTOR, and sirtuins, suggesting potential therapeutic targets for human longevity.",
-          actions: ["AGING_RESEARCH"],
+          actions: ["AGING_RESEARCH_TOOL_CALL"],
         },
       },
     ],

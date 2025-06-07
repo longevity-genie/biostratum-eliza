@@ -5,12 +5,12 @@ export const toolSelectionTemplate = `
 
 # Prompt
 
-You are an intelligent assistant helping select the right tool to address a user's request.
+You are an intelligent assistant helping select the right biological research tool to address a user's request.
 
-Choose from the available MCP tools to address the user's request.
+Choose from the available Biostratum research tools to address the user's request.
 
 CRITICAL INSTRUCTIONS:
-1. You MUST specify both a valid serverName AND toolName from the list above
+1. You MUST specify both a valid serverName AND toolName from the Biostratum research servers listed above
 2. The serverName value should match EXACTLY the server name shown in parentheses (Server: X)
    CORRECT: "serverName": "github"  (if the server is called "github")
    WRONG: "serverName": "GitHub" or "Github" or any other variation

@@ -37,18 +37,18 @@ function createToolSelectionPrompt(
 import { composePromptFromState } from "@elizaos/core";
 
 export const sequenceAnalysisAction: Action = {
-  name: "SEQUENCE_ANALYSIS",
+  name: "SEQUENCE_ANALYSIS_TOOL_CALL",
   similes: [
-    "ANALYZE_SEQUENCES",
-    "SEQUENCE_BLAST",
-    "PROTEIN_STRUCTURE", 
-    "DNA_ANALYSIS",
-    "PROTEIN_ANALYSIS",
-    "ALPHAFOLD_PREDICT",
-    "SEQUENCE_ALIGNMENT",
-    "DOWNLOAD_SEQUENCES"
+    "ANALYZE_SEQUENCES_TOOL_CALL",
+    "SEQUENCE_BLAST_TOOL_CALL",
+    "PROTEIN_STRUCTURE_TOOL_CALL", 
+    "DNA_ANALYSIS_TOOL_CALL",
+    "PROTEIN_ANALYSIS_TOOL_CALL",
+    "ALPHAFOLD_PREDICT_TOOL_CALL",
+    "SEQUENCE_ALIGNMENT_TOOL_CALL",
+    "DOWNLOAD_SEQUENCES_TOOL_CALL"
   ],
-  description: DOMAIN_DESCRIPTIONS.sequenceAnalysis,
+  description: "Biostratum Sequence Analysis - " + DOMAIN_DESCRIPTIONS.sequenceAnalysis,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
@@ -72,7 +72,7 @@ export const sequenceAnalysisAction: Action = {
     _options?: { [key: string]: unknown },
     callback?: HandlerCallback
   ): Promise<boolean> => {
-    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "MCP"]);
+    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "BIOSTRATUM"]);
 
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
@@ -165,14 +165,14 @@ export const sequenceAnalysisAction: Action = {
         name: "{{assistant}}",
         content: {
           text: "I'll help you predict the 3D structure of that protein sequence using AlphaFold. Let me analyze the sequence...",
-          actions: ["SEQUENCE_ANALYSIS"],
+          actions: ["SEQUENCE_ANALYSIS_TOOL_CALL"],
         },
       },
       {
         name: "{{assistant}}",
         content: {
           text: "I've analyzed your protein sequence using AlphaFold structure prediction:\n\n**Sequence:** MKWVTFISLLLLFSSAYS\n**Length:** 18 amino acids\n\n**Structure Prediction Results:**\n- The sequence appears to contain a signal peptide at the N-terminus\n- Predicted secondary structure includes alpha-helical regions\n- Confidence scores indicate high reliability for the core structure\n\nThe predicted 3D coordinates and confidence scores have been generated. This appears to be a short peptide sequence that may function as a signal peptide for protein targeting.",
-          actions: ["SEQUENCE_ANALYSIS"],
+          actions: ["SEQUENCE_ANALYSIS_TOOL_CALL"],
         },
       },
     ],

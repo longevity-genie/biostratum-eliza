@@ -37,18 +37,18 @@ function createToolSelectionPrompt(
 import { composePromptFromState } from "@elizaos/core";
 
 export const drugDiscoveryAction: Action = {
-  name: "DRUG_DISCOVERY",
+  name: "DRUG_DISCOVERY_TOOL_CALL",
   similes: [
-    "SEARCH_DRUGS",
-    "FIND_COMPOUNDS", 
-    "CHEMICAL_SEARCH",
-    "DRUG_TARGETS",
-    "PHARMACOLOGY",
-    "DRUG_INTERACTIONS",
-    "COMPOUND_ANALYSIS",
-    "LIGAND_SEARCH"
+    "SEARCH_DRUGS_TOOL_CALL",
+    "FIND_COMPOUNDS_TOOL_CALL", 
+    "CHEMICAL_SEARCH_TOOL_CALL",
+    "DRUG_TARGETS_TOOL_CALL",
+    "PHARMACOLOGY_TOOL_CALL",
+    "DRUG_INTERACTIONS_TOOL_CALL",
+    "COMPOUND_ANALYSIS_TOOL_CALL",
+    "LIGAND_SEARCH_TOOL_CALL"
   ],
-  description: DOMAIN_DESCRIPTIONS.drugDiscovery,
+  description: "Biostratum Drug Discovery - " + DOMAIN_DESCRIPTIONS.drugDiscovery,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
@@ -72,7 +72,7 @@ export const drugDiscoveryAction: Action = {
     _options?: { [key: string]: unknown },
     callback?: HandlerCallback
   ): Promise<boolean> => {
-    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "MCP"]);
+    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "BIOSTRATUM"]);
 
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
@@ -165,14 +165,14 @@ export const drugDiscoveryAction: Action = {
         name: "{{assistant}}",
         content: {
           text: "I'll help you find information about aspirin and its pharmacological targets. Let me search through our drug databases...",
-          actions: ["DRUG_DISCOVERY"],
+          actions: ["DRUG_DISCOVERY_TOOL_CALL"],
         },
       },
       {
         name: "{{assistant}}",
         content: {
           text: "I found comprehensive information about aspirin:\n\n**Compound Information:**\n- Name: Aspirin (Acetylsalicylic acid)\n- Molecular Formula: C9H8O4\n- Molecular Weight: 180.16 g/mol\n- InChIKey: BSYNRYMUTXBXSQ-UHFFFAOYSA-N\n\n**Primary Targets:**\n- COX-1 (Cyclooxygenase-1): Irreversible inhibition\n- COX-2 (Cyclooxygenase-2): Inhibition at higher doses\n\n**Therapeutic Effects:**\n- Anti-inflammatory\n- Analgesic (pain relief)\n- Antipyretic (fever reduction)\n- Antiplatelet (blood thinning)\n\n**Mechanism:** Aspirin irreversibly acetylates serine residues in cyclooxygenase enzymes, blocking prostaglandin synthesis.",
-          actions: ["DRUG_DISCOVERY"],
+          actions: ["DRUG_DISCOVERY_TOOL_CALL"],
         },
       },
     ],

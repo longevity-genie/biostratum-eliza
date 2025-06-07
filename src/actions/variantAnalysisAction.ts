@@ -37,18 +37,18 @@ function createToolSelectionPrompt(
 import { composePromptFromState } from "@elizaos/core";
 
 export const variantAnalysisAction: Action = {
-  name: "VARIANT_ANALYSIS",
+  name: "VARIANT_ANALYSIS_TOOL_CALL",
   similes: [
-    "ANALYZE_VARIANTS",
-    "SEARCH_MUTATIONS", 
-    "VARIANT_SEARCH",
-    "MUTATION_ANALYSIS",
-    "CANCER_MUTATIONS",
-    "COSMIC_SEARCH",
-    "SNP_ANALYSIS",
-    "GENETIC_VARIANTS"
+    "ANALYZE_VARIANTS_TOOL_CALL",
+    "SEARCH_MUTATIONS_TOOL_CALL", 
+    "VARIANT_SEARCH_TOOL_CALL",
+    "MUTATION_ANALYSIS_TOOL_CALL",
+    "CANCER_MUTATIONS_TOOL_CALL",
+    "COSMIC_SEARCH_TOOL_CALL",
+    "SNP_ANALYSIS_TOOL_CALL",
+    "GENETIC_VARIANTS_TOOL_CALL"
   ],
-  description: DOMAIN_DESCRIPTIONS.variantAnalysis,
+  description: "Biostratum Variant Analysis - " + DOMAIN_DESCRIPTIONS.variantAnalysis,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
@@ -72,7 +72,7 @@ export const variantAnalysisAction: Action = {
     _options?: { [key: string]: unknown },
     callback?: HandlerCallback
   ): Promise<boolean> => {
-    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "MCP"]);
+    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "BIOSTRATUM"]);
 
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
@@ -165,14 +165,14 @@ export const variantAnalysisAction: Action = {
         name: "{{assistant}}",
         content: {
           text: "I'll search for TP53 mutations in cancer databases. Let me check the COSMIC database for cancer mutations...",
-          actions: ["VARIANT_ANALYSIS"],
+          actions: ["VARIANT_ANALYSIS_TOOL_CALL"],
         },
       },
       {
         name: "{{assistant}}",
         content: {
           text: "I found extensive mutation data for TP53 in cancer:\n\n**TP53 Cancer Mutations:**\n- Total mutations found: 28,000+ entries in COSMIC\n- Most common mutation types: Missense mutations (60%), nonsense mutations (20%)\n- Hotspot mutations: R175H, R248Q, R273H, G245S\n- Cancer types: Found in >50% of all cancers\n\n**Key Mutation Effects:**\n- R175H: Loss of DNA-binding function\n- R248Q: Dominant negative effect\n- R273H: Impaired transcriptional activity\n\n**Functional Impact:**\nMost TP53 mutations result in loss of tumor suppressor function, leading to impaired DNA damage response and cell cycle control.",
-          actions: ["VARIANT_ANALYSIS"],
+          actions: ["VARIANT_ANALYSIS_TOOL_CALL"],
         },
       },
     ],

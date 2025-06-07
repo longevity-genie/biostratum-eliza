@@ -37,18 +37,18 @@ function createToolSelectionPrompt(
 import { composePromptFromState } from "@elizaos/core";
 
 export const expressionAnalysisAction: Action = {
-  name: "EXPRESSION_ANALYSIS",
+  name: "EXPRESSION_ANALYSIS_TOOL_CALL",
   similes: [
-    "GENE_EXPRESSION",
-    "ENRICHMENT_ANALYSIS", 
-    "TISSUE_EXPRESSION",
-    "SINGLE_CELL_ANALYSIS",
-    "FUNCTIONAL_ANALYSIS",
-    "PATHWAY_ANALYSIS",
-    "PROTEIN_DOMAINS",
-    "CELL_TYPE_ANALYSIS"
+    "GENE_EXPRESSION_TOOL_CALL",
+    "ENRICHMENT_ANALYSIS_TOOL_CALL", 
+    "TISSUE_EXPRESSION_TOOL_CALL",
+    "SINGLE_CELL_ANALYSIS_TOOL_CALL",
+    "FUNCTIONAL_ANALYSIS_TOOL_CALL",
+    "PATHWAY_ANALYSIS_TOOL_CALL",
+    "PROTEIN_DOMAINS_TOOL_CALL",
+    "CELL_TYPE_ANALYSIS_TOOL_CALL"
   ],
-  description: DOMAIN_DESCRIPTIONS.expressionAnalysis,
+  description: "Biostratum Expression Analysis - " + DOMAIN_DESCRIPTIONS.expressionAnalysis,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
@@ -72,7 +72,7 @@ export const expressionAnalysisAction: Action = {
     _options?: { [key: string]: unknown },
     callback?: HandlerCallback
   ): Promise<boolean> => {
-    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "MCP"]);
+    const composedState = await runtime.composeState(message, ["RECENT_MESSAGES", "BIOSTRATUM"]);
 
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
@@ -165,14 +165,14 @@ export const expressionAnalysisAction: Action = {
         name: "{{assistant}}",
         content: {
           text: "I'll analyze APOE tissue expression patterns and perform pathway enrichment analysis. Let me check the expression databases...",
-          actions: ["EXPRESSION_ANALYSIS"],
+          actions: ["EXPRESSION_ANALYSIS_TOOL_CALL"],
         },
       },
       {
         name: "{{assistant}}",
         content: {
           text: "I've analyzed APOE expression and pathway associations:\n\n**Tissue Expression (ARCHS4 data):**\n- Highest expression: Brain (hippocampus, cortex), Liver\n- Moderate expression: Kidney, Adrenal gland\n- Low expression: Muscle, Skin\n\n**Enriched Pathways:**\n- Cholesterol metabolism (KEGG)\n- Lipid transport and metabolism\n- Alzheimer's disease pathway\n- PPAR signaling pathway\n- Complement and coagulation cascades\n\n**Functional Context:**\nAPOE shows brain-specific expression patterns consistent with its role in neurodegeneration and lipid metabolism, particularly relevant to Alzheimer's disease risk.",
-          actions: ["EXPRESSION_ANALYSIS"],
+          actions: ["EXPRESSION_ANALYSIS_TOOL_CALL"],
         },
       },
     ],
