@@ -3,27 +3,28 @@ export const feedbackTemplate = `
 
 {{{recentMessages}}}
 
-# Prompt
+# JSON Correction Instructions
 
 You previously attempted to parse a JSON selection but encountered an error. You need to fix the issues and provide a valid JSON response.
 
-PREVIOUS RESPONSE:
-{{{originalResponse}}
+**PREVIOUS RESPONSE:**
+{{{originalResponse}}}
 
-ERROR:
-{{{errorMessage}}
+**ERROR:**
+{{{errorMessage}}}
 
-Available {{{itemType}}}s:
-{{{itemsDescription}}
+**Available {{{itemType}}}s:**
+{{{itemsDescription}}}
 
-User request: "{{{userMessage}}}"
+**User request:** "{{{userMessage}}}"
 
-CORRECTED INSTRUCTIONS:
-1. Create a valid JSON object that selects the most appropriate {{{itemType}}} for the task
-2. Make sure to use proper JSON syntax with double quotes for keys and string values
-3. Ensure all values exactly match the available {{{itemType}}}s (names are case-sensitive!)
-4. Do not include any markdown formatting, explanations, or non-JSON content
-5. Do not use placeholders - all values should be concrete and usable
+## CRITICAL REQUIREMENTS FOR CORRECTION:
+1. **SERVER NAMES**: Must match EXACTLY the server name shown in [SERVER NAME] - case-sensitive!
+   - Use complete names like "biostratum-gget", NOT abbreviated forms like "gget"
+2. **{{{itemType}}} NAMES**: Must match exactly the available {{{itemType}}} names (case-sensitive!)
+3. **JSON FORMAT**: Valid JSON syntax with double quotes for keys and string values
+4. **NO PLACEHOLDERS**: All values must be concrete and usable (no "example", "your-value", etc.)
+5. **NO FORMATTING**: No markdown, code blocks, or explanatory text outside the JSON
 
-YOUR CORRECTED VALID JSON RESPONSE:
+## Your Corrected JSON Response:
 `;

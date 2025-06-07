@@ -167,6 +167,9 @@ export function buildMcpProviderData(servers: McpServer[]): McpProvider {
     };
   }
 
+  textContent += "# Available MCP Servers\n\n";
+  textContent += "**CRITICAL**: Always use the EXACT server name shown in [SERVER NAME] - these are case-sensitive and must match exactly!\n\n";
+
   for (const server of servers) {
     mcpData[server.name] = {
       status: server.status,
@@ -174,10 +177,10 @@ export function buildMcpProviderData(servers: McpServer[]): McpProvider {
       resources: {} as Record<string, McpResourceInfo>,
     };
 
-    textContent += `## Server: ${server.name} (${server.status})\n\n`;
+    textContent += `## [SERVER NAME]: **${server.name}** (Status: ${server.status})\n\n`;
 
     if (server.tools && server.tools.length > 0) {
-      textContent += "### Tools:\n\n";
+      textContent += "### Available Tools:\n\n";
 
       for (const tool of server.tools) {
         mcpData[server.name].tools[tool.name] = {
@@ -194,7 +197,7 @@ export function buildMcpProviderData(servers: McpServer[]): McpProvider {
     }
 
     if (server.resources && server.resources.length > 0) {
-      textContent += "### Resources:\n\n";
+      textContent += "### Available Resources:\n\n";
 
       for (const resource of server.resources) {
         mcpData[server.name].resources[resource.uri] = {
@@ -203,7 +206,7 @@ export function buildMcpProviderData(servers: McpServer[]): McpProvider {
           mimeType: resource.mimeType,
         };
 
-        textContent += `- **${resource.name}** (${resource.uri}): ${
+        textContent += `- **${resource.name}** (URI: \`${resource.uri}\`): ${
           resource.description || "No description available"
         }\n`;
       }
@@ -214,6 +217,6 @@ export function buildMcpProviderData(servers: McpServer[]): McpProvider {
   return {
     values: { mcp: mcpData },
     data: { mcp: mcpData },
-    text: `# MCP Configuration\n\n${textContent}`,
+    text: textContent,
   };
 }

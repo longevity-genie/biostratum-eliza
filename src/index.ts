@@ -25,7 +25,7 @@ const biostratumPlugin: Plugin = {
     agingResearchAction,        // AGING_RESEARCH_TOOL_CALL
     // Generic fallback actions (disabled for testing)
     // callToolAction,           // CALL_TOOL
-    // readResourceAction        // READ_RESOURCE
+    readResourceAction        // READ_RESOURCE
   ],
   providers: [provider],
   services: [McpService],

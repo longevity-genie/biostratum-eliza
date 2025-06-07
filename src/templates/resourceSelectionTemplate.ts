@@ -3,38 +3,53 @@ export const resourceSelectionTemplate = `
 
 {{{recentMessages}}}
 
-# Prompt
+# Resource Selection Instructions
 
-You are an intelligent assistant helping select the right resource to address a user's request.
+You are selecting the appropriate resource to address a user's request from the MCP servers listed above.
 
-CRITICAL INSTRUCTIONS:
-1. You MUST specify both a valid serverName AND uri from the list above
-2. The serverName value should match EXACTLY the server name shown in parentheses (Server: X)
-   CORRECT: "serverName": "github"  (if the server is called "github") 
-   WRONG: "serverName": "GitHub" or "Github" or any other variation
-3. The uri value should match EXACTLY the resource uri listed
-   CORRECT: "uri": "weather://San Francisco/current"  (if that's the exact uri)
-   WRONG: "uri": "weather://sanfrancisco/current" or any variation
-4. Identify the user's information need from the conversation context
-5. Select the most appropriate resource based on its description and the request
-6. If no resource seems appropriate, output {"noResourceAvailable": true}
+## CRITICAL SERVER NAME REQUIREMENTS:
+1. **EXACT MATCH REQUIRED**: The "serverName" in your response MUST match EXACTLY the server name shown in [SERVER NAME] above
+2. **CASE SENSITIVE**: Server names are case-sensitive - "biostratum-gget" ≠ "biostratum-Gget" ≠ "gget"
+3. **NO ABBREVIATIONS**: Use the complete server name as shown (e.g., "biostratum-gget", NOT "gget")
+4. **NO MODIFICATIONS**: Don't add or remove prefixes, suffixes, or change formatting
 
-!!! YOUR RESPONSE MUST BE A VALID JSON OBJECT ONLY !!! 
+## CRITICAL URI REQUIREMENTS:
+1. **EXACT MATCH REQUIRED**: The "uri" must match EXACTLY the URI shown in parentheses after each resource
+2. **CASE SENSITIVE**: URIs are case-sensitive and format-sensitive
+3. **NO MODIFICATIONS**: Copy the exact URI including all special characters, slashes, and formatting
 
-STRICT FORMAT REQUIREMENTS:
+## Selection Process:
+1. Analyze the user's request to understand their information need
+2. Find the most appropriate resource based on its description and the user's request
+3. If no resource seems appropriate for the request, output {"noResourceAvailable": true}
+
+## Response Format:
+- Your response MUST be valid JSON only (no code blocks, no comments, no explanatory text)
 - NO code block formatting (NO backticks or \`\`\`)
 - NO comments (NO // or /* */)
 - NO placeholders like "replace with...", "example", "your...", "actual", etc.
 - Every parameter value must be a concrete, usable value (not instructions to replace)
 - Use proper JSON syntax with double quotes for strings
 - NO explanatory text before or after the JSON object
-
-EXAMPLE RESPONSE:
+- Use this exact structure:
 {
-  "serverName": "weather-server",
-  "uri": "weather://San Francisco/current",
-  "reasoning": "Based on the conversation, the user is asking about current weather in San Francisco. This resource provides up-to-date weather information for that city."
+  "serverName": "exact-server-name-from-list-above",
+  "uri": "exact-uri-from-list-above",
+  "reasoning": "Brief explanation of why this resource matches the user's request"
 }
 
-REMEMBER: Your response will be parsed directly as JSON. If it fails to parse, the operation will fail completely!
+## Invalid Examples to AVOID:
+❌ "serverName": "gget" (should be "biostratum-gget")
+❌ "serverName": "Biostratum-gget" (wrong capitalization)
+❌ "uri": "modified-uri" (must be exact match)
+❌ Adding code blocks or explanatory text outside JSON
+
+## Valid Example:
+✅ {
+  "serverName": "biostratum-gget",
+  "uri": "gget://search/FOXO3",
+  "reasoning": "User requested information about FOXO3 gene, this resource provides gene search capabilities"
+}
+
+REMEMBER: Your response will be parsed as JSON. Any deviation from pure JSON format will cause parsing failure!
 `;
