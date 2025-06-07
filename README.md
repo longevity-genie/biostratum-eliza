@@ -1,6 +1,6 @@
 # Biostratum MCP Plugin for ElizaOS
 
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-blue.svg)](https://conventionalcommits.org)
+Developed during Bio x AI Hackathon 2025 as part of [HolyBioMCP](https://github.com/longevity-genie/holy-bio-mcp) project
 
 ![Gagarin at Work](gagarin_at_work.png)
 *Bio-Gagarin character with biostratum plugin working in ElizaOS native chat*
