@@ -46,17 +46,29 @@ export class McpService extends Service {
   }
 
   async stop(): Promise<void> {
-    for (const connection of this.connections) {
-      try {
-        await this.deleteConnection(connection.server.name);
-      } catch (error) {
-        logger.error(
-          `Failed to close connection for ${connection.server.name}:`,
-          error instanceof Error ? error.message : String(error)
-        );
-      }
-    }
+    logger.info(`🛑 Stopping MCP service with ${this.connections.length} connections...`);
+    
+    // Create list of connections to cleanup before clearing the array
+    const connectionsToCleanup = [...this.connections];
     this.connections = [];
+    
+    // Fire-and-forget cleanup for all connections to avoid daemon thread delays
+    if (connectionsToCleanup.length > 0) {
+      setImmediate(async () => {
+        for (const connection of connectionsToCleanup) {
+          try {
+            connection.transport.close().catch(() => {});
+            connection.client.close().catch(() => {});
+          } catch (error) {
+            // Silently ignore cleanup errors
+          }
+        }
+      });
+      
+      logger.info(`🗑️  ${connectionsToCleanup.length} connections cleanup running in background`);
+    }
+    
+    logger.info(`✅ MCP service stopped (cleanup will continue in background)`);
   }
 
   private async initializeMcpServers(): Promise<void> {
@@ -125,6 +137,7 @@ export class McpService extends Service {
       longevity: { command: "longevity-mcp", enabled: false },
       gget: { command: "gget-mcp", enabled: true },
       "synergy-age": { command: "synergy-age-mcp", enabled: true },
+      pharmacology: { command: "pharmacology-mcp", enabled: true },
       druginteractions: { command: "druginteractions-mcp", enabled: false },
     };
 
@@ -157,10 +170,15 @@ export class McpService extends Service {
       }
 
       // Create MCP server configuration with tool filtering
+      // Special handling for pharmacology server that needs stdio argument
+      const args = serverName === "pharmacology" 
+        ? [serverConfig.command, "stdio"] 
+        : [serverConfig.command];
+      
       mcpServers[`biostratum-${serverName}`] = {
         type: "stdio",
         command: "uvx",
-        args: [serverConfig.command],
+        args,
         toolFiltering: {
           include: include || [],
           exclude: exclude || [],
@@ -178,6 +196,7 @@ export class McpService extends Service {
     const currentNames = new Set(this.connections.map((conn) => conn.server.name));
     const newNames = new Set(Object.keys(serverConfigs));
 
+    // Remove deleted servers first
     for (const name of currentNames) {
       if (!newNames.has(name)) {
         await this.deleteConnection(name);
@@ -185,30 +204,44 @@ export class McpService extends Service {
       }
     }
 
+    // Prepare connection tasks for parallel execution
+    const connectionTasks: Promise<void>[] = [];
+
     for (const [name, config] of Object.entries(serverConfigs)) {
       const currentConnection = this.connections.find((conn) => conn.server.name === name);
 
       if (!currentConnection) {
-        try {
-          await this.connectToServer(name, config);
-        } catch (error) {
+        // New server - add to parallel connection tasks
+        const task = this.connectToServer(name, config).catch((error) => {
           logger.error(
             `Failed to connect to new MCP server ${name}:`,
             error instanceof Error ? error.message : String(error)
           );
-        }
+        });
+        connectionTasks.push(task);
       } else if (JSON.stringify(config) !== currentConnection.server.config) {
-        try {
-          await this.deleteConnection(name);
-          await this.connectToServer(name, config);
-          logger.info(`Reconnected MCP server with updated config: ${name}`);
-        } catch (error) {
-          logger.error(
-            `Failed to reconnect MCP server ${name}:`,
-            error instanceof Error ? error.message : String(error)
-          );
-        }
+        // Configuration changed - reconnect
+        const task = (async () => {
+          try {
+            await this.deleteConnection(name);
+            await this.connectToServer(name, config);
+            logger.info(`Reconnected MCP server with updated config: ${name}`);
+          } catch (error) {
+            logger.error(
+              `Failed to reconnect MCP server ${name}:`,
+              error instanceof Error ? error.message : String(error)
+            );
+          }
+        })();
+        connectionTasks.push(task);
       }
+    }
+
+    // Execute all connection tasks in parallel
+    if (connectionTasks.length > 0) {
+      logger.info(`🚀 Establishing ${connectionTasks.length} MCP server connections in parallel...`);
+      await Promise.all(connectionTasks);
+      logger.info(`✅ Parallel connection establishment completed`);
     }
   }
 
@@ -309,16 +342,20 @@ export class McpService extends Service {
   async deleteConnection(name: string): Promise<void> {
     const connection = this.getServerConnection(name);
     if (connection) {
-      try {
-        await connection.transport.close();
-        await connection.client.close();
-      } catch (error) {
-        logger.error(
-          `Failed to close transport for ${name}:`,
-          error instanceof Error ? error.message : String(error)
-        );
-      }
+      // Remove from connections immediately to prevent reuse
       this.connections = this.connections.filter((conn) => conn.server.name !== name);
+      
+      // Fire-and-forget cleanup to avoid daemon thread delays
+      setImmediate(async () => {
+        try {
+          connection.transport.close().catch(() => {}); // Ignore cleanup errors
+          connection.client.close().catch(() => {}); // Ignore cleanup errors
+        } catch (error) {
+          // Silently ignore cleanup errors in fire-and-forget mode
+        }
+      });
+      
+      logger.info(`🗑️  Connection removed: ${name} (cleanup running in background)`);
     }
   }
 
@@ -456,6 +493,11 @@ export class McpService extends Service {
       throw new Error(`Server "${serverName}" is disabled`);
     }
 
+    // Check connection health
+    if (connection.server.status !== "connected") {
+      throw new Error(`Server "${serverName}" is not connected (status: ${connection.server.status})`);
+    }
+
     let timeout = DEFAULT_MCP_TIMEOUT_SECONDS;
     try {
       const config = JSON.parse(connection.server.config);
@@ -467,17 +509,26 @@ export class McpService extends Service {
       );
     }
 
-    const result = await connection.client.callTool(
-      { name: toolName, arguments: toolArguments },
-      undefined,
-      { timeout }
-    );
+    try {
+      const result = await connection.client.callTool(
+        { name: toolName, arguments: toolArguments },
+        undefined,
+        { timeout }
+      );
 
-    if (!result.content) {
-      throw new Error("Invalid tool result: missing content array");
+      if (!result.content) {
+        throw new Error("Invalid tool result: missing content array");
+      }
+
+      return result as CallToolResult;
+    } catch (error) {
+      // If tool call fails, mark connection as potentially unhealthy
+      if (error instanceof Error && (error.message.includes("connection") || error.message.includes("transport"))) {
+        connection.server.status = "disconnected";
+        logger.warn(`Connection to ${serverName} appears to be broken, marked as disconnected`);
+      }
+      throw error;
     }
-
-    return result as CallToolResult;
   }
 
   public async readResource(serverName: string, uri: string): Promise<McpResourceResponse> {

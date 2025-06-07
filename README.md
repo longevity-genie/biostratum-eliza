@@ -80,13 +80,14 @@ For easier setup with biostratum-compatible servers:
       "biothings": {},
       "opengenes": {},
       "gget": {},
+      "pharmacology": {},
       "synergy-age": {}
     }
   }
 }
 ```
 
-This automatically configures biostratum MCP servers using `uvx`. All four ready servers (biothings, opengenes, gget, synergy-age) are enabled by default with all their tools available. You can also mix both configurations - biostratum and mcp servers will be merged.
+This automatically configures biostratum MCP servers using `uvx`. All five ready servers (biothings, opengenes, gget, pharmacology, synergy-age) are enabled by default with all their tools available. You can also mix both configurations - biostratum and mcp servers will be merged.
 
 ## 📦 Prerequisites for Biostratum Servers
 
@@ -169,12 +170,13 @@ The `biostratum` section provides simplified configuration for biostratum-compat
 | `biothings`        | ✅ Ready    | 19    | Access to biological data and annotations (genes, variants, chemicals, taxa) | `uvx biothings-mcp`          |
 | `opengenes`        | ✅ Ready    | 3     | Gene information related to longevity and aging research | `uvx opengenes-mcp`          |
 | `gget`             | ✅ Ready    | 19    | Comprehensive genomics toolkit (search, sequences, BLAST, structure prediction) | `uvx gget-mcp`               |
+| `pharmacology`     | ✅ Ready    | 7     | Pharmacological targets, ligands, and interactions from Guide to PHARMACOLOGY | `uvx pharmacology-mcp stdio` |
 | `longevity`        | 🚧 WIP      | -     | Longevity research data and interventions             | `uvx longevity-mcp`          |
 | `synergy-age`      | ✅ Ready    | 3     | Database of synergistic and antagonistic lifespan effects of genetic interventions in model organisms | `uvx synergy-age-mcp`        |
 | `druginteractions` | 🚧 WIP      | -     | Drug interaction data and analysis                    | `uvx druginteractions-mcp`   |
 
 **Note**: 
-- ✅ **Ready** servers are enabled by default and fully functional (total: 44 tools)
+- ✅ **Ready** servers are enabled by default and fully functional (total: 51 tools)
 - 🚧 **WIP** servers are disabled by default and still in development. Set `"enabled": true` to use them.
 
 ##### Detailed Tool Breakdown
@@ -199,6 +201,10 @@ The `biostratum` section provides simplified configuration for biostratum-compat
 - Structure: `gget_alphafold`, `gget_pdb`
 - Disease/Drugs: `gget_cosmic`, `gget_opentargets`
 - Utilities: `gget_mutate`, `gget_setup`
+
+**Pharmacology Server (7 tools):**
+- Core API: `list_targets`, `list_ligands`, `list_interactions`
+- File Output: `local_search_targets_to_file`, `local_search_ligands_to_file`, `local_get_target_interactions_to_file`, `local_get_ligand_interactions_to_file`
 
 **SynergyAge Server (3 tools):**
 - `synergyage_get_schema_info`: Get database schema information for genetic synergy data
@@ -245,6 +251,9 @@ You can control which tools are available from each server using include/exclude
   },
   "gget": {
     "include": ["gget_search", "gget_info", "gget_seq", "gget_alphafold"]  // Core genomics workflow tools
+  },
+  "pharmacology": {
+    "include": ["list_targets", "list_ligands", "list_interactions"]  // Core pharmacology API tools
   },
   "synergy-age": {
     "include": ["synergyage_get_schema_info", "synergyage_example_queries"]  // Schema and examples only
@@ -352,6 +361,9 @@ Here's a complete example configuration with multiple MCP servers using both tra
       },
       "gget": {
         "include": ["gget_search", "gget_info", "gget_seq", "gget_blast", "gget_alphafold"]
+      },
+      "pharmacology": {
+        "include": ["list_targets", "list_ligands", "list_interactions"]
       },
       "synergy-age": {},
       "longevity": {

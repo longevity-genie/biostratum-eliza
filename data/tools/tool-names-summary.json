@@ -1,7 +1,7 @@
 {
-  "fetchedAt": "2025-06-07T01:23:38.773Z",
-  "totalServers": 4,
-  "totalTools": 44,
+  "fetchedAt": "2025-06-07T16:03:53.519Z",
+  "totalServers": 5,
+  "totalTools": 51,
   "toolsByServer": {
     "biothings": [
       "query_genes",
@@ -54,6 +54,15 @@
       "synergyage_get_schema_info",
       "synergyage_example_queries",
       "synergyage_db_query"
+    ],
+    "pharmacology": [
+      "local_search_targets_to_file",
+      "local_search_ligands_to_file",
+      "local_get_target_interactions_to_file",
+      "local_get_ligand_interactions_to_file",
+      "list_targets",
+      "list_ligands",
+      "list_interactions"
     ]
   },
   "toolDetails": {
@@ -362,6 +371,53 @@
         "requiredParams": [
           "sql"
         ]
+      }
+    },
+    "pharmacology": {
+      "local_search_targets_to_file": {
+        "description": "Search for pharmacological targets and save results to a file",
+        "hasRequiredParams": true,
+        "requiredParams": [
+          "file_path_str"
+        ]
+      },
+      "local_search_ligands_to_file": {
+        "description": "Search for ligands/compounds and save results to a file",
+        "hasRequiredParams": true,
+        "requiredParams": [
+          "file_path_str"
+        ]
+      },
+      "local_get_target_interactions_to_file": {
+        "description": "Get all interactions for a specific target and save to a file",
+        "hasRequiredParams": true,
+        "requiredParams": [
+          "target_id",
+          "file_path_str"
+        ]
+      },
+      "local_get_ligand_interactions_to_file": {
+        "description": "Get all interactions for a specific ligand and save to a file",
+        "hasRequiredParams": true,
+        "requiredParams": [
+          "ligand_id",
+          "file_path_str"
+        ]
+      },
+      "list_targets": {
+        "description": "Retrieve a list of targets from the Guide to PHARMACOLOGY database.\n            \n            You can filter targets by:\n            - Type (e.g., GPCR, Enzyme, Ion channel)\n            - Name (partial match)\n            - Gene symbol\n            - EC number (for enzymes)\n            - External database accession\n            - Special categories (immuno, malaria)\n\n\n**Responses:**\n\n- **200** (Success): Successful Response\n  - Content-Type: `application/json`\n\n  - **Example:**\n```json\n[\n  \"unknown_type\"\n]\n```\n\n- **422**: Validation Error\n  - Content-Type: `application/json`\n\n  - **Response Properties:**\n\n  - **Example:**\n```json\n{\n  \"detail\": [\n    \"unknown_type\"\n  ]\n}\n```",
+        "hasRequiredParams": false,
+        "requiredParams": []
+      },
+      "list_ligands": {
+        "description": "Retrieve a list of ligands from the Guide to PHARMACOLOGY database.\n            \n            You can filter ligands by:\n            - Type (e.g., Synthetic organic, Metabolite, Natural product, Peptide)\n            - Name (partial match)\n            - Gene symbol (for peptide ligands)\n            - InChIKey\n            - External database accession\n            - Special categories (immuno, malaria, antibacterial)\n            - Physicochemical properties (molecular weight, LogP, etc.)\n\n\n**Responses:**\n\n- **200** (Success): Successful Response\n  - Content-Type: `application/json`\n\n  - **Example:**\n```json\n[\n  \"unknown_type\"\n]\n```\n\n- **422**: Validation Error\n  - Content-Type: `application/json`\n\n  - **Response Properties:**\n\n  - **Example:**\n```json\n{\n  \"detail\": [\n    \"unknown_type\"\n  ]\n}\n```",
+        "hasRequiredParams": false,
+        "requiredParams": []
+      },
+      "list_interactions": {
+        "description": "Retrieve a list of interactions from the Guide to PHARMACOLOGY database.\n            \n            You can filter interactions by:\n            - Target ID\n            - Ligand ID\n            - Interaction type\n            - Affinity type and value\n            - Species\n            - Approved/primary target status\n\n\n**Responses:**\n\n- **200** (Success): Successful Response\n  - Content-Type: `application/json`\n\n  - **Example:**\n```json\n[\n  \"unknown_type\"\n]\n```\n\n- **422**: Validation Error\n  - Content-Type: `application/json`\n\n  - **Response Properties:**\n\n  - **Example:**\n```json\n{\n  \"detail\": [\n    \"unknown_type\"\n  ]\n}\n```",
+        "hasRequiredParams": false,
+        "requiredParams": []
       }
     }
   }

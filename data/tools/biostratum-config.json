@@ -67,6 +67,19 @@
         "synergyage_db_query"
       ],
       "exclude": []
+    },
+    "pharmacology": {
+      "enabled": true,
+      "include": [
+        "local_search_targets_to_file",
+        "local_search_ligands_to_file",
+        "local_get_target_interactions_to_file",
+        "local_get_ligand_interactions_to_file",
+        "list_targets",
+        "list_ligands",
+        "list_interactions"
+      ],
+      "exclude": []
     }
   }
 }

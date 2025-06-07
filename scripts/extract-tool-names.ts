@@ -42,21 +42,31 @@ async function main() {
 
   combinedData.servers.forEach(serverResult => {
     const serverName = serverResult.server;
-    const toolNames = serverResult.tools.map(tool => tool.name);
     
-    toolsByServer[serverName] = toolNames;
-    toolDetails[serverName] = {};
+    // Check if server has tools or if there was an error
+    if ('tools' in serverResult && serverResult.tools && Array.isArray(serverResult.tools)) {
+      const toolNames = serverResult.tools.map(tool => tool.name);
+      
+      toolsByServer[serverName] = toolNames;
+      toolDetails[serverName] = {};
 
-    serverResult.tools.forEach(tool => {
-      toolDetails[serverName][tool.name] = {
-        description: tool.description || '',
-        hasRequiredParams: (tool as any).inputSchema?.required?.length > 0,
-        requiredParams: (tool as any).inputSchema?.required || []
-      };
-    });
+      serverResult.tools.forEach(tool => {
+        toolDetails[serverName][tool.name] = {
+          description: tool.description || '',
+          hasRequiredParams: (tool as any).inputSchema?.required?.length > 0,
+          requiredParams: (tool as any).inputSchema?.required || []
+        };
+      });
 
-    console.log(`📋 ${serverName}: ${toolNames.length} tools`);
-    toolNames.forEach(name => console.log(`  - ${name}`));
+      console.log(`📋 ${serverName}: ${toolNames.length} tools`);
+      toolNames.forEach(name => console.log(`  - ${name}`));
+    } else {
+      // Server had an error
+      const errorResult = serverResult as any;
+      console.log(`❌ ${serverName}: ${errorResult.error || 'Unknown error'}`);
+      toolsByServer[serverName] = [];
+      toolDetails[serverName] = {};
+    }
     console.log();
   });
 
@@ -70,6 +80,7 @@ async function main() {
     else if (serverName === 'opengenes') configName = 'opengenes';  
     else if (serverName === 'gget') configName = 'gget';
     else if (serverName === 'synergy-age') configName = 'synergy-age';
+    else if (serverName === 'pharmacology') configName = 'pharmacology';
 
     biostratumConfig[configName] = {
       enabled: true,

@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2025-06-07T01:23:38.773Z",
+  "fetchedAt": "2025-06-07T16:03:53.519Z",
   "servers": [
     {
       "server": "biothings",
@@ -1054,7 +1054,7 @@
           }
         }
       ],
-      "fetchedAt": "2025-06-07T01:23:31.471Z"
+      "fetchedAt": "2025-06-07T16:03:53.330Z"
     },
     {
       "server": "opengenes",
@@ -1093,7 +1093,7 @@
           }
         }
       ],
-      "fetchedAt": "2025-06-07T01:23:32.905Z"
+      "fetchedAt": "2025-06-07T16:03:52.736Z"
     },
     {
       "server": "gget",
@@ -1688,7 +1688,7 @@
           }
         }
       ],
-      "fetchedAt": "2025-06-07T01:23:35.145Z"
+      "fetchedAt": "2025-06-07T16:03:53.518Z"
     },
     {
       "server": "synergy-age",
@@ -1727,7 +1727,682 @@
           }
         }
       ],
-      "fetchedAt": "2025-06-07T01:23:38.772Z"
+      "fetchedAt": "2025-06-07T16:03:52.686Z"
+    },
+    {
+      "server": "pharmacology",
+      "toolCount": 7,
+      "tools": [
+        {
+          "name": "local_search_targets_to_file",
+          "description": "Search for pharmacological targets and save results to a file",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "file_path_str": {
+                "title": "File Path Str",
+                "type": "string"
+              },
+              "name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Name"
+              },
+              "target_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Target Type"
+              },
+              "gene_symbol": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Gene Symbol"
+              },
+              "immuno": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Immuno"
+              },
+              "malaria": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Malaria"
+              }
+            },
+            "required": [
+              "file_path_str"
+            ]
+          }
+        },
+        {
+          "name": "local_search_ligands_to_file",
+          "description": "Search for ligands/compounds and save results to a file",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "file_path_str": {
+                "title": "File Path Str",
+                "type": "string"
+              },
+              "name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Name"
+              },
+              "ligand_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Ligand Type"
+              },
+              "inchikey": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Inchikey"
+              },
+              "approved": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Approved"
+              },
+              "immuno": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Immuno"
+              },
+              "malaria": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Malaria"
+              },
+              "antibacterial": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Antibacterial"
+              }
+            },
+            "required": [
+              "file_path_str"
+            ]
+          }
+        },
+        {
+          "name": "local_get_target_interactions_to_file",
+          "description": "Get all interactions for a specific target and save to a file",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "title": "Target Id",
+                "type": "integer"
+              },
+              "file_path_str": {
+                "title": "File Path Str",
+                "type": "string"
+              },
+              "species": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Species"
+              },
+              "interaction_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Interaction Type"
+              },
+              "approved_only": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Approved Only"
+              }
+            },
+            "required": [
+              "target_id",
+              "file_path_str"
+            ]
+          }
+        },
+        {
+          "name": "local_get_ligand_interactions_to_file",
+          "description": "Get all interactions for a specific ligand and save to a file",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "ligand_id": {
+                "title": "Ligand Id",
+                "type": "integer"
+              },
+              "file_path_str": {
+                "title": "File Path Str",
+                "type": "string"
+              },
+              "species": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Species"
+              },
+              "interaction_type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Interaction Type"
+              },
+              "primary_target_only": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Primary Target Only"
+              }
+            },
+            "required": [
+              "ligand_id",
+              "file_path_str"
+            ]
+          }
+        },
+        {
+          "name": "list_targets",
+          "description": "Retrieve a list of targets from the Guide to PHARMACOLOGY database.\n            \n            You can filter targets by:\n            - Type (e.g., GPCR, Enzyme, Ion channel)\n            - Name (partial match)\n            - Gene symbol\n            - EC number (for enzymes)\n            - External database accession\n            - Special categories (immuno, malaria)\n\n\n**Responses:**\n\n- **200** (Success): Successful Response\n  - Content-Type: `application/json`\n\n  - **Example:**\n```json\n[\n  \"unknown_type\"\n]\n```\n\n- **422**: Validation Error\n  - Content-Type: `application/json`\n\n  - **Response Properties:**\n\n  - **Example:**\n```json\n{\n  \"detail\": [\n    \"unknown_type\"\n  ]\n}\n```",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Type",
+                "description": "Target type filter"
+              },
+              "name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Name",
+                "description": "Search by name"
+              },
+              "geneSymbol": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Genesymbol",
+                "description": "Search by gene symbol"
+              },
+              "ecNumber": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Ecnumber",
+                "description": "Search by EC number"
+              },
+              "accession": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Accession",
+                "description": "External database accession"
+              },
+              "database": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Database",
+                "description": "External database name"
+              },
+              "immuno": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Immuno",
+                "description": "Include immunopharmacology data"
+              },
+              "malaria": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Malaria",
+                "description": "Include malaria data"
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "name": "list_ligands",
+          "description": "Retrieve a list of ligands from the Guide to PHARMACOLOGY database.\n            \n            You can filter ligands by:\n            - Type (e.g., Synthetic organic, Metabolite, Natural product, Peptide)\n            - Name (partial match)\n            - Gene symbol (for peptide ligands)\n            - InChIKey\n            - External database accession\n            - Special categories (immuno, malaria, antibacterial)\n            - Physicochemical properties (molecular weight, LogP, etc.)\n\n\n**Responses:**\n\n- **200** (Success): Successful Response\n  - Content-Type: `application/json`\n\n  - **Example:**\n```json\n[\n  \"unknown_type\"\n]\n```\n\n- **422**: Validation Error\n  - Content-Type: `application/json`\n\n  - **Response Properties:**\n\n  - **Example:**\n```json\n{\n  \"detail\": [\n    \"unknown_type\"\n  ]\n}\n```",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Type",
+                "description": "Ligand type filter"
+              },
+              "name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Name",
+                "description": "Search by name"
+              },
+              "geneSymbol": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Genesymbol",
+                "description": "Search by gene symbol"
+              },
+              "accession": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Accession",
+                "description": "External database accession"
+              },
+              "database": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Database",
+                "description": "External database name"
+              },
+              "inchikey": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Inchikey",
+                "description": "InChIKey"
+              },
+              "immuno": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Immuno",
+                "description": "Include immunopharmacology data"
+              },
+              "malaria": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Malaria",
+                "description": "Include malaria data"
+              },
+              "antibacterial": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Antibacterial",
+                "description": "Include antibacterial data"
+              },
+              "approved": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Approved",
+                "description": "Filter by approval status"
+              },
+              "molWeightGt": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Molweightgt",
+                "description": "Minimum molecular weight"
+              },
+              "molWeightLt": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Molweightlt",
+                "description": "Maximum molecular weight"
+              }
+            },
+            "required": []
+          }
+        },
+        {
+          "name": "list_interactions",
+          "description": "Retrieve a list of interactions from the Guide to PHARMACOLOGY database.\n            \n            You can filter interactions by:\n            - Target ID\n            - Ligand ID\n            - Interaction type\n            - Affinity type and value\n            - Species\n            - Approved/primary target status\n\n\n**Responses:**\n\n- **200** (Success): Successful Response\n  - Content-Type: `application/json`\n\n  - **Example:**\n```json\n[\n  \"unknown_type\"\n]\n```\n\n- **422**: Validation Error\n  - Content-Type: `application/json`\n\n  - **Response Properties:**\n\n  - **Example:**\n```json\n{\n  \"detail\": [\n    \"unknown_type\"\n  ]\n}\n```",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "targetId": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Targetid",
+                "description": "Filter by target ID"
+              },
+              "ligandId": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Ligandid",
+                "description": "Filter by ligand ID"
+              },
+              "type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Type",
+                "description": "Interaction type"
+              },
+              "affinityType": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Affinitytype",
+                "description": "Affinity type"
+              },
+              "species": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Species",
+                "description": "Species"
+              },
+              "affinity": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Affinity",
+                "description": "Affinity value"
+              },
+              "ligandType": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Ligandtype",
+                "description": "Ligand type"
+              },
+              "approved": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Approved",
+                "description": "Is approved"
+              },
+              "primaryTarget": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Primarytarget",
+                "description": "Is primary target"
+              }
+            },
+            "required": []
+          }
+        }
+      ],
+      "fetchedAt": "2025-06-07T16:03:52.763Z"
     }
   ]
 }
