@@ -10,18 +10,19 @@ import {
 import type { McpService } from "../service";
 import { toolSelectionTemplate } from "../templates/toolSelectionTemplate";
 import { MCP_SERVICE_NAME } from "../types";
+import type { McpProvider } from "../types";
+import {
+  DOMAIN_DESCRIPTIONS,
+  filterProviderForDomain,
+  isDomainAvailable,
+} from "../utils/domainFiltering";
 import { handleMcpError } from "../utils/error";
 import { withModelRetry } from "../utils/mcp";
 import { handleToolResponse, processToolResult } from "../utils/processing";
 import { createToolSelectionFeedbackPrompt, validateToolSelection } from "../utils/validation";
 import type { ToolSelection } from "../utils/validation";
-import { filterProviderForDomain, DOMAIN_DESCRIPTIONS, isDomainAvailable } from "../utils/domainFiltering";
-import type { McpProvider } from "../types";
 
-function createToolSelectionPrompt(
-  state: State,
-  mcpProvider: McpProvider
-): string {
+function createToolSelectionPrompt(state: State, mcpProvider: McpProvider): string {
   return composePromptFromState({
     state: {
       ...state,
@@ -40,19 +41,19 @@ export const agingResearchAction: Action = {
   name: "AGING_RESEARCH_TOOL_CALL",
   similes: [
     "LONGEVITY_RESEARCH_TOOL_CALL",
-    "AGING_GENES_TOOL_CALL", 
+    "AGING_GENES_TOOL_CALL",
     "LIFESPAN_ANALYSIS_TOOL_CALL",
     "SYNERGY_AGE_TOOL_CALL",
     "OPENGENES_TOOL_CALL",
     "AGING_INTERVENTIONS_TOOL_CALL",
     "GENETIC_SYNERGY_TOOL_CALL",
-    "LONGEVITY_DATABASE_TOOL_CALL"
+    "LONGEVITY_DATABASE_TOOL_CALL",
   ],
-  description: "Biostratum Aging Research - " + DOMAIN_DESCRIPTIONS.agingResearch,
+  description: `Biostratum Aging Research - ${DOMAIN_DESCRIPTIONS.agingResearch}`,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     logger.info("🕰️ [VALIDATION] Starting aging research action validation");
-    
+
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
       logger.warn("🕰️ [VALIDATION] MCP service not available - validation failed");
@@ -63,20 +64,20 @@ export const agingResearchAction: Action = {
     // Check if any servers are connected
     const servers = mcpService.getServers();
     logger.info(`🕰️ [VALIDATION] Found ${servers.length} MCP servers`);
-    
+
     if (servers.length === 0) {
       logger.warn("🕰️ [VALIDATION] No MCP servers found - validation failed");
       return false;
     }
 
-    const connectedServers = servers.filter(server => server.status === "connected");
+    const connectedServers = servers.filter((server) => server.status === "connected");
     logger.info(`🕰️ [VALIDATION] Connected servers: ${connectedServers.length}/${servers.length}`);
-    
+
     for (const server of servers) {
-      logger.info(`🕰️ [VALIDATION] Server "${server.name || 'unnamed'}" status: ${server.status}`);
+      logger.info(`🕰️ [VALIDATION] Server "${server.name || "unnamed"}" status: ${server.status}`);
     }
 
-    if (!servers.some(server => server.status === "connected")) {
+    if (!servers.some((server) => server.status === "connected")) {
       logger.warn("🕰️ [VALIDATION] No connected MCP servers - validation failed");
       return false;
     }
@@ -84,14 +85,14 @@ export const agingResearchAction: Action = {
     // 🕰️ Check if this domain has any available tools
     const fullMcpProvider = mcpService.getProviderData();
     logger.info("🕰️ [VALIDATION] Retrieved MCP provider data, checking domain availability");
-    
+
     const domainAvailable = isDomainAvailable(fullMcpProvider, "agingResearch");
     logger.info(`🕰️ [VALIDATION] Aging research domain available: ${domainAvailable}`);
-    
+
     if (!domainAvailable) {
       logger.warn("🕰️ [VALIDATION] No aging research tools available - validation failed");
     }
-    
+
     return domainAvailable;
   },
 
@@ -148,7 +149,9 @@ export const agingResearchAction: Action = {
 
       const { serverName, toolName, arguments: toolArguments, reasoning } = parsedSelection;
 
-      logger.debug(`🕰️ Selected aging tool "${toolName}" on server "${serverName}" because: ${reasoning}`);
+      logger.debug(
+        `🕰️ Selected aging tool "${toolName}" on server "${serverName}" because: ${reasoning}`
+      );
 
       const result = await mcpService.callTool(serverName, toolName, toolArguments);
       logger.debug(
@@ -207,4 +210,4 @@ export const agingResearchAction: Action = {
       },
     ],
   ],
-}; 
+};

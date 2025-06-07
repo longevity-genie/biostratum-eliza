@@ -4,7 +4,8 @@ import { MCP_SERVICE_NAME } from "./types";
 
 export const provider: Provider = {
   name: "BIOSTRATUM",
-  description: "Biostratum MCP Orchestra - Information about connected biological research servers, tools, and resources",
+  description:
+    "Biostratum MCP Orchestra - Information about connected biological research servers, tools, and resources",
 
   get: async (runtime: IAgentRuntime, _message: Memory, _state: State) => {
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);

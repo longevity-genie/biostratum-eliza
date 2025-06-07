@@ -10,18 +10,19 @@ import {
 import type { McpService } from "../service";
 import { toolSelectionTemplate } from "../templates/toolSelectionTemplate";
 import { MCP_SERVICE_NAME } from "../types";
+import type { McpProvider } from "../types";
+import {
+  DOMAIN_DESCRIPTIONS,
+  filterProviderForDomain,
+  isDomainAvailable,
+} from "../utils/domainFiltering";
 import { handleMcpError } from "../utils/error";
 import { withModelRetry } from "../utils/mcp";
 import { handleToolResponse, processToolResult } from "../utils/processing";
 import { createToolSelectionFeedbackPrompt, validateToolSelection } from "../utils/validation";
 import type { ToolSelection } from "../utils/validation";
-import { filterProviderForDomain, DOMAIN_DESCRIPTIONS, isDomainAvailable } from "../utils/domainFiltering";
-import type { McpProvider } from "../types";
 
-function createToolSelectionPrompt(
-  state: State,
-  mcpProvider: McpProvider
-): string {
+function createToolSelectionPrompt(state: State, mcpProvider: McpProvider): string {
   return composePromptFromState({
     state: {
       ...state,
@@ -40,22 +41,22 @@ export const variantAnalysisAction: Action = {
   name: "VARIANT_ANALYSIS_TOOL_CALL",
   similes: [
     "ANALYZE_VARIANTS_TOOL_CALL",
-    "SEARCH_MUTATIONS_TOOL_CALL", 
+    "SEARCH_MUTATIONS_TOOL_CALL",
     "VARIANT_SEARCH_TOOL_CALL",
     "MUTATION_ANALYSIS_TOOL_CALL",
-    "CANCER_MUTATIONS_TOOL_CALL",
+    "VARIANT_ANALYSIS_TOOL_CALL",
     "COSMIC_SEARCH_TOOL_CALL",
     "SNP_ANALYSIS_TOOL_CALL",
-    "GENETIC_VARIANTS_TOOL_CALL"
+    "GENETIC_VARIANTS_TOOL_CALL",
   ],
-  description: "Biostratum Variant Analysis - " + DOMAIN_DESCRIPTIONS.variantAnalysis,
+  description: `Biostratum Variant Analysis - ${DOMAIN_DESCRIPTIONS.variantAnalysis}`,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     logger.info("🔬 [VALIDATION] Starting variant analysis action validation");
-    
+
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
-      logger.warn("🔬 [VALIDATION] MCP service not available - validation failed");
+      logger.warn("🔬 [VALIDATION] MCP service not found - validation failed");
       return false;
     }
     logger.info("🔬 [VALIDATION] MCP service found");
@@ -63,20 +64,20 @@ export const variantAnalysisAction: Action = {
     // Check if any servers are connected
     const servers = mcpService.getServers();
     logger.info(`🔬 [VALIDATION] Found ${servers.length} MCP servers`);
-    
+
     if (servers.length === 0) {
       logger.warn("🔬 [VALIDATION] No MCP servers found - validation failed");
       return false;
     }
 
-    const connectedServers = servers.filter(server => server.status === "connected");
+    const connectedServers = servers.filter((server) => server.status === "connected");
     logger.info(`🔬 [VALIDATION] Connected servers: ${connectedServers.length}/${servers.length}`);
-    
+
     for (const server of servers) {
-      logger.info(`🔬 [VALIDATION] Server "${server.name || 'unnamed'}" status: ${server.status}`);
+      logger.info(`🔬 [VALIDATION] Server "${server.name || "unnamed"}" status: ${server.status}`);
     }
 
-    if (!servers.some(server => server.status === "connected")) {
+    if (!servers.some((server) => server.status === "connected")) {
       logger.warn("🔬 [VALIDATION] No connected MCP servers - validation failed");
       return false;
     }
@@ -84,14 +85,14 @@ export const variantAnalysisAction: Action = {
     // 🔬 Check if this domain has any available tools
     const fullMcpProvider = mcpService.getProviderData();
     logger.info("🔬 [VALIDATION] Retrieved MCP provider data, checking domain availability");
-    
+
     const domainAvailable = isDomainAvailable(fullMcpProvider, "variantAnalysis");
     logger.info(`🔬 [VALIDATION] Variant analysis domain available: ${domainAvailable}`);
-    
+
     if (!domainAvailable) {
       logger.warn("🔬 [VALIDATION] No variant analysis tools available - validation failed");
     }
-    
+
     return domainAvailable;
   },
 
@@ -148,7 +149,9 @@ export const variantAnalysisAction: Action = {
 
       const { serverName, toolName, arguments: toolArguments, reasoning } = parsedSelection;
 
-      logger.debug(`🧬 Selected variant tool "${toolName}" on server "${serverName}" because: ${reasoning}`);
+      logger.debug(
+        `🧬 Selected variant tool "${toolName}" on server "${serverName}" because: ${reasoning}`
+      );
 
       const result = await mcpService.callTool(serverName, toolName, toolArguments);
       logger.debug(
@@ -207,4 +210,4 @@ export const variantAnalysisAction: Action = {
       },
     ],
   ],
-}; 
+};

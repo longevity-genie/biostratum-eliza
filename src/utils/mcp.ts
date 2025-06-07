@@ -168,7 +168,8 @@ export function buildMcpProviderData(servers: McpServer[]): McpProvider {
   }
 
   textContent += "# Available MCP Servers\n\n";
-  textContent += "**CRITICAL**: Always use the EXACT server name shown in [SERVER NAME] - these are case-sensitive and must match exactly!\n\n";
+  textContent +=
+    "**CRITICAL**: Always use the EXACT server name shown in [SERVER NAME] - these are case-sensitive and must match exactly!\n\n";
 
   for (const server of servers) {
     mcpData[server.name] = {

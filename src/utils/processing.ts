@@ -94,7 +94,9 @@ export function processToolResult(
     } else if (content.type === "image") {
       hasAttachments = true;
       attachments.push({
-        contentType: content.mimeType ? getContentTypeFromMimeType(content.mimeType) : ContentType.IMAGE,
+        contentType: content.mimeType
+          ? getContentTypeFromMimeType(content.mimeType)
+          : ContentType.IMAGE,
         url: `data:${content.mimeType};base64,${content.data}`,
         id: createUniqueUuid(runtime, messageEntityId),
         title: "Generated image",

@@ -47,7 +47,8 @@ export const callToolAction: Action = {
     "INVOKE_TOOL",
     "INVOKE_MCP_TOOL",
   ],
-  description: "Fallback tool for complex cross-domain biological research queries when domain-specific actions are insufficient. Access to all 51 biostratum tools across gene discovery, sequence analysis, drug discovery, variant analysis, expression analysis, and aging research domains.",
+  description:
+    "Fallback tool for complex cross-domain biological research queries when domain-specific actions are insufficient. Access to all 51 biostratum tools across gene discovery, sequence analysis, drug discovery, variant analysis, expression analysis, and aging research domains.",
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);

@@ -10,18 +10,19 @@ import {
 import type { McpService } from "../service";
 import { toolSelectionTemplate } from "../templates/toolSelectionTemplate";
 import { MCP_SERVICE_NAME } from "../types";
+import type { McpProvider } from "../types";
+import {
+  DOMAIN_DESCRIPTIONS,
+  filterProviderForDomain,
+  isDomainAvailable,
+} from "../utils/domainFiltering";
 import { handleMcpError } from "../utils/error";
 import { withModelRetry } from "../utils/mcp";
 import { handleToolResponse, processToolResult } from "../utils/processing";
 import { createToolSelectionFeedbackPrompt, validateToolSelection } from "../utils/validation";
 import type { ToolSelection } from "../utils/validation";
-import { filterProviderForDomain, DOMAIN_DESCRIPTIONS, isDomainAvailable } from "../utils/domainFiltering";
-import type { McpProvider } from "../types";
 
-function createToolSelectionPrompt(
-  state: State,
-  mcpProvider: McpProvider
-): string {
+function createToolSelectionPrompt(state: State, mcpProvider: McpProvider): string {
   return composePromptFromState({
     state: {
       ...state,
@@ -39,23 +40,24 @@ import { composePromptFromState } from "@elizaos/core";
 export const sequenceAnalysisAction: Action = {
   name: "SEQUENCE_ANALYSIS_TOOL_CALL",
   similes: [
+    "SEQUENCE_SEARCH_TOOL_CALL",
     "ANALYZE_SEQUENCES_TOOL_CALL",
     "SEQUENCE_BLAST_TOOL_CALL",
-    "PROTEIN_STRUCTURE_TOOL_CALL", 
+    "PROTEIN_STRUCTURE_TOOL_CALL",
     "DNA_ANALYSIS_TOOL_CALL",
     "PROTEIN_ANALYSIS_TOOL_CALL",
     "ALPHAFOLD_PREDICT_TOOL_CALL",
     "SEQUENCE_ALIGNMENT_TOOL_CALL",
-    "DOWNLOAD_SEQUENCES_TOOL_CALL"
+    "DOWNLOAD_SEQUENCES_TOOL_CALL",
   ],
-  description: "Biostratum Sequence Analysis - " + DOMAIN_DESCRIPTIONS.sequenceAnalysis,
+  description: `Biostratum Sequence Analysis - ${DOMAIN_DESCRIPTIONS.sequenceAnalysis}`,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     logger.info("🧬 [VALIDATION] Starting sequence analysis action validation");
-    
+
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
-      logger.warn("🧬 [VALIDATION] MCP service not available - validation failed");
+      logger.warn("🧬 [VALIDATION] MCP service not found - validation failed");
       return false;
     }
     logger.info("🧬 [VALIDATION] MCP service found");
@@ -63,20 +65,20 @@ export const sequenceAnalysisAction: Action = {
     // Check if any servers are connected
     const servers = mcpService.getServers();
     logger.info(`🧬 [VALIDATION] Found ${servers.length} MCP servers`);
-    
+
     if (servers.length === 0) {
       logger.warn("🧬 [VALIDATION] No MCP servers found - validation failed");
       return false;
     }
 
-    const connectedServers = servers.filter(server => server.status === "connected");
+    const connectedServers = servers.filter((server) => server.status === "connected");
     logger.info(`🧬 [VALIDATION] Connected servers: ${connectedServers.length}/${servers.length}`);
-    
+
     for (const server of servers) {
-      logger.info(`🧬 [VALIDATION] Server "${server.name || 'unnamed'}" status: ${server.status}`);
+      logger.info(`🧬 [VALIDATION] Server "${server.name || "unnamed"}" status: ${server.status}`);
     }
 
-    if (!servers.some(server => server.status === "connected")) {
+    if (!servers.some((server) => server.status === "connected")) {
       logger.warn("🧬 [VALIDATION] No connected MCP servers - validation failed");
       return false;
     }
@@ -84,14 +86,14 @@ export const sequenceAnalysisAction: Action = {
     // 🧬 Check if this domain has any available tools
     const fullMcpProvider = mcpService.getProviderData();
     logger.info("🧬 [VALIDATION] Retrieved MCP provider data, checking domain availability");
-    
+
     const domainAvailable = isDomainAvailable(fullMcpProvider, "sequenceAnalysis");
     logger.info(`🧬 [VALIDATION] Sequence analysis domain available: ${domainAvailable}`);
-    
+
     if (!domainAvailable) {
       logger.warn("🧬 [VALIDATION] No sequence analysis tools available - validation failed");
     }
-    
+
     return domainAvailable;
   },
 
@@ -148,7 +150,9 @@ export const sequenceAnalysisAction: Action = {
 
       const { serverName, toolName, arguments: toolArguments, reasoning } = parsedSelection;
 
-      logger.debug(`🧬 Selected sequence tool "${toolName}" on server "${serverName}" because: ${reasoning}`);
+      logger.debug(
+        `🧬 Selected sequence tool "${toolName}" on server "${serverName}" because: ${reasoning}`
+      );
 
       const result = await mcpService.callTool(serverName, toolName, toolArguments);
       logger.debug(
@@ -207,4 +211,4 @@ export const sequenceAnalysisAction: Action = {
       },
     ],
   ],
-}; 
+};

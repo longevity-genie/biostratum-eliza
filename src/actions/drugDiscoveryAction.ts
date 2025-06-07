@@ -10,18 +10,19 @@ import {
 import type { McpService } from "../service";
 import { toolSelectionTemplate } from "../templates/toolSelectionTemplate";
 import { MCP_SERVICE_NAME } from "../types";
+import type { McpProvider } from "../types";
+import {
+  DOMAIN_DESCRIPTIONS,
+  filterProviderForDomain,
+  isDomainAvailable,
+} from "../utils/domainFiltering";
 import { handleMcpError } from "../utils/error";
 import { withModelRetry } from "../utils/mcp";
 import { handleToolResponse, processToolResult } from "../utils/processing";
 import { createToolSelectionFeedbackPrompt, validateToolSelection } from "../utils/validation";
 import type { ToolSelection } from "../utils/validation";
-import { filterProviderForDomain, DOMAIN_DESCRIPTIONS, isDomainAvailable } from "../utils/domainFiltering";
-import type { McpProvider } from "../types";
 
-function createToolSelectionPrompt(
-  state: State,
-  mcpProvider: McpProvider
-): string {
+function createToolSelectionPrompt(state: State, mcpProvider: McpProvider): string {
   return composePromptFromState({
     state: {
       ...state,
@@ -40,22 +41,22 @@ export const drugDiscoveryAction: Action = {
   name: "DRUG_DISCOVERY_TOOL_CALL",
   similes: [
     "SEARCH_DRUGS_TOOL_CALL",
-    "FIND_COMPOUNDS_TOOL_CALL", 
+    "FIND_COMPOUNDS_TOOL_CALL",
     "CHEMICAL_SEARCH_TOOL_CALL",
     "DRUG_TARGETS_TOOL_CALL",
-    "PHARMACOLOGY_TOOL_CALL",
+    "CHEMICAL_COMPOUNDS_TOOL_CALL",
     "DRUG_INTERACTIONS_TOOL_CALL",
     "COMPOUND_ANALYSIS_TOOL_CALL",
-    "LIGAND_SEARCH_TOOL_CALL"
+    "LIGAND_SEARCH_TOOL_CALL",
   ],
-  description: "Biostratum Drug Discovery - " + DOMAIN_DESCRIPTIONS.drugDiscovery,
+  description: `Biostratum Drug Discovery - ${DOMAIN_DESCRIPTIONS.drugDiscovery}`,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     logger.info("💊 [VALIDATION] Starting drug discovery action validation");
-    
+
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) {
-      logger.warn("💊 [VALIDATION] MCP service not available - validation failed");
+      logger.warn("💊 [VALIDATION] MCP service not found - validation failed");
       return false;
     }
     logger.info("💊 [VALIDATION] MCP service found");
@@ -63,20 +64,20 @@ export const drugDiscoveryAction: Action = {
     // Check if any servers are connected
     const servers = mcpService.getServers();
     logger.info(`💊 [VALIDATION] Found ${servers.length} MCP servers`);
-    
+
     if (servers.length === 0) {
       logger.warn("💊 [VALIDATION] No MCP servers found - validation failed");
       return false;
     }
 
-    const connectedServers = servers.filter(server => server.status === "connected");
+    const connectedServers = servers.filter((server) => server.status === "connected");
     logger.info(`💊 [VALIDATION] Connected servers: ${connectedServers.length}/${servers.length}`);
-    
+
     for (const server of servers) {
-      logger.info(`💊 [VALIDATION] Server "${server.name || 'unnamed'}" status: ${server.status}`);
+      logger.info(`💊 [VALIDATION] Server "${server.name || "unnamed"}" status: ${server.status}`);
     }
 
-    if (!servers.some(server => server.status === "connected")) {
+    if (!servers.some((server) => server.status === "connected")) {
       logger.warn("💊 [VALIDATION] No connected MCP servers - validation failed");
       return false;
     }
@@ -84,14 +85,14 @@ export const drugDiscoveryAction: Action = {
     // 💊 Check if this domain has any available tools
     const fullMcpProvider = mcpService.getProviderData();
     logger.info("💊 [VALIDATION] Retrieved MCP provider data, checking domain availability");
-    
+
     const domainAvailable = isDomainAvailable(fullMcpProvider, "drugDiscovery");
     logger.info(`💊 [VALIDATION] Drug discovery domain available: ${domainAvailable}`);
-    
+
     if (!domainAvailable) {
       logger.warn("💊 [VALIDATION] No drug discovery tools available - validation failed");
     }
-    
+
     return domainAvailable;
   },
 
@@ -148,7 +149,9 @@ export const drugDiscoveryAction: Action = {
 
       const { serverName, toolName, arguments: toolArguments, reasoning } = parsedSelection;
 
-      logger.debug(`💊 Selected drug tool "${toolName}" on server "${serverName}" because: ${reasoning}`);
+      logger.debug(
+        `💊 Selected drug tool "${toolName}" on server "${serverName}" because: ${reasoning}`
+      );
 
       const result = await mcpService.callTool(serverName, toolName, toolArguments);
       logger.debug(
@@ -207,4 +210,4 @@ export const drugDiscoveryAction: Action = {
       },
     ],
   ],
-}; 
+};

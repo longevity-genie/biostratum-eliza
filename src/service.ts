@@ -47,11 +47,11 @@ export class McpService extends Service {
 
   async stop(): Promise<void> {
     logger.info(`🛑 Stopping MCP service with ${this.connections.length} connections...`);
-    
+
     // Create list of connections to cleanup before clearing the array
     const connectionsToCleanup = [...this.connections];
     this.connections = [];
-    
+
     // Fire-and-forget cleanup for all connections to avoid daemon thread delays
     if (connectionsToCleanup.length > 0) {
       setImmediate(async () => {
@@ -59,16 +59,16 @@ export class McpService extends Service {
           try {
             connection.transport.close().catch(() => {});
             connection.client.close().catch(() => {});
-          } catch (error) {
+          } catch (_error) {
             // Silently ignore cleanup errors
           }
         }
       });
-      
+
       logger.info(`🗑️  ${connectionsToCleanup.length} connections cleanup running in background`);
     }
-    
-    logger.info(`✅ MCP service stopped (cleanup will continue in background)`);
+
+    logger.info("✅ MCP service stopped (cleanup will continue in background)");
   }
 
   private async initializeMcpServers(): Promise<void> {
@@ -171,10 +171,9 @@ export class McpService extends Service {
 
       // Create MCP server configuration with tool filtering
       // Special handling for pharmacology server that needs stdio argument
-      const args = serverName === "pharmacology" 
-        ? [serverConfig.command, "stdio"] 
-        : [serverConfig.command];
-      
+      const args =
+        serverName === "pharmacology" ? [serverConfig.command, "stdio"] : [serverConfig.command];
+
       mcpServers[`biostratum-${serverName}`] = {
         type: "stdio",
         command: "uvx",
@@ -239,9 +238,11 @@ export class McpService extends Service {
 
     // Execute all connection tasks in parallel
     if (connectionTasks.length > 0) {
-      logger.info(`🚀 Establishing ${connectionTasks.length} MCP server connections in parallel...`);
+      logger.info(
+        `🚀 Establishing ${connectionTasks.length} MCP server connections in parallel...`
+      );
       await Promise.all(connectionTasks);
-      logger.info(`✅ Parallel connection establishment completed`);
+      logger.info("✅ Parallel connection establishment completed");
     }
   }
 
@@ -344,17 +345,17 @@ export class McpService extends Service {
     if (connection) {
       // Remove from connections immediately to prevent reuse
       this.connections = this.connections.filter((conn) => conn.server.name !== name);
-      
+
       // Fire-and-forget cleanup to avoid daemon thread delays
       setImmediate(async () => {
         try {
           connection.transport.close().catch(() => {}); // Ignore cleanup errors
           connection.client.close().catch(() => {}); // Ignore cleanup errors
-        } catch (error) {
+        } catch (_error) {
           // Silently ignore cleanup errors in fire-and-forget mode
         }
       });
-      
+
       logger.info(`🗑️  Connection removed: ${name} (cleanup running in background)`);
     }
   }
@@ -495,7 +496,9 @@ export class McpService extends Service {
 
     // Check connection health
     if (connection.server.status !== "connected") {
-      throw new Error(`Server "${serverName}" is not connected (status: ${connection.server.status})`);
+      throw new Error(
+        `Server "${serverName}" is not connected (status: ${connection.server.status})`
+      );
     }
 
     let timeout = DEFAULT_MCP_TIMEOUT_SECONDS;
@@ -523,7 +526,10 @@ export class McpService extends Service {
       return result as CallToolResult;
     } catch (error) {
       // If tool call fails, mark connection as potentially unhealthy
-      if (error instanceof Error && (error.message.includes("connection") || error.message.includes("transport"))) {
+      if (
+        error instanceof Error &&
+        (error.message.includes("connection") || error.message.includes("transport"))
+      ) {
         connection.server.status = "disconnected";
         logger.warn(`Connection to ${serverName} appears to be broken, marked as disconnected`);
       }
