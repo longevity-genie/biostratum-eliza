@@ -15,10 +15,12 @@ import { withModelRetry } from "../utils/mcp";
 import { handleToolResponse, processToolResult } from "../utils/processing";
 import { createToolSelectionFeedbackPrompt, validateToolSelection } from "../utils/validation";
 import type { ToolSelection } from "../utils/validation";
+import { filterProviderForDomain, DOMAIN_DESCRIPTIONS, isDomainAvailable } from "../utils/domainFiltering";
+import type { McpProvider } from "../types";
 
 function createToolSelectionPrompt(
   state: State,
-  mcpProvider: { values: { mcp: unknown }; data: { mcp: unknown }; text: string }
+  mcpProvider: McpProvider
 ): string {
   return composePromptFromState({
     state: {
@@ -34,32 +36,33 @@ function createToolSelectionPrompt(
 
 import { composePromptFromState } from "@elizaos/core";
 
-export const callToolAction: Action = {
-  name: "CALL_TOOL",
+export const agingResearchAction: Action = {
+  name: "AGING_RESEARCH",
   similes: [
-    "CALL_MCP_TOOL",
-    "USE_TOOL",
-    "USE_MCP_TOOL",
-    "EXECUTE_TOOL",
-    "EXECUTE_MCP_TOOL",
-    "RUN_TOOL",
-    "RUN_MCP_TOOL",
-    "INVOKE_TOOL",
-    "INVOKE_MCP_TOOL",
+    "LONGEVITY_RESEARCH",
+    "AGING_GENES", 
+    "LIFESPAN_ANALYSIS",
+    "SYNERGY_AGE",
+    "OPENGENES",
+    "AGING_INTERVENTIONS",
+    "GENETIC_SYNERGY",
+    "LONGEVITY_DATABASE"
   ],
-  description: "Fallback tool for complex cross-domain biological research queries when domain-specific actions are insufficient. Access to all 51 biostratum tools across gene discovery, sequence analysis, drug discovery, variant analysis, expression analysis, and aging research domains.",
+  description: DOMAIN_DESCRIPTIONS.agingResearch,
 
   validate: async (runtime: IAgentRuntime, _message: Memory, _state?: State): Promise<boolean> => {
     const mcpService = runtime.getService<McpService>(MCP_SERVICE_NAME);
     if (!mcpService) return false;
 
+    // Check if any servers are connected
     const servers = mcpService.getServers();
-    return (
-      servers.length > 0 &&
-      servers.some(
-        (server) => server.status === "connected" && server.tools && server.tools.length > 0
-      )
-    );
+    if (servers.length === 0 || !servers.some(server => server.status === "connected")) {
+      return false;
+    }
+
+    // 🕰️ Check if this domain has any available tools
+    const fullMcpProvider = mcpService.getProviderData();
+    return isDomainAvailable(fullMcpProvider, "agingResearch");
   },
 
   handler: async (
@@ -76,12 +79,14 @@ export const callToolAction: Action = {
       throw new Error("MCP service not available");
     }
 
-    const mcpProvider = mcpService.getProviderData();
+    // 🕰️ Filter provider data to only aging research tools
+    const fullMcpProvider = mcpService.getProviderData();
+    const mcpProvider = filterProviderForDomain(fullMcpProvider, "agingResearch");
 
     try {
       const toolSelectionPrompt = createToolSelectionPrompt(composedState, mcpProvider);
 
-      logger.info(`Tool selection prompt: ${toolSelectionPrompt}`);
+      logger.info(`🕰️ Aging research tool selection prompt: ${toolSelectionPrompt}`);
 
       const toolSelection = await runtime.useModel(ModelType.TEXT_SMALL, {
         prompt: toolSelectionPrompt,
@@ -96,15 +101,15 @@ export const callToolAction: Action = {
         (originalResponse, errorMessage, state, userMessage) =>
           createToolSelectionFeedbackPrompt(originalResponse, errorMessage, state, userMessage),
         callback,
-        "I'm having trouble figuring out the best way to help with your request. Could you provide more details about what you're looking for?"
+        "I'm having trouble figuring out the best way to help with your aging research request. Could you provide more details about what longevity or aging data you're looking for?"
       );
 
       if (!parsedSelection || parsedSelection.noToolAvailable) {
         if (callback && parsedSelection?.noToolAvailable) {
           await callback({
-            text: "I don't have a specific tool that can help with that request. Let me try to assist you directly instead.",
+            text: "I don't have a specific aging research tool that can help with that request. Let me try to assist you directly instead.",
             thought:
-              "No appropriate MCP tool available for this request. Falling back to direct assistance.",
+              "No appropriate aging research tool available for this request. Falling back to direct assistance.",
             actions: ["REPLY"],
           });
         }
@@ -113,11 +118,11 @@ export const callToolAction: Action = {
 
       const { serverName, toolName, arguments: toolArguments, reasoning } = parsedSelection;
 
-      logger.debug(`Selected tool "${toolName}" on server "${serverName}" because: ${reasoning}`);
+      logger.debug(`🕰️ Selected aging tool "${toolName}" on server "${serverName}" because: ${reasoning}`);
 
       const result = await mcpService.callTool(serverName, toolName, toolArguments);
       logger.debug(
-        `Called tool ${toolName} on server ${serverName} with arguments ${JSON.stringify(toolArguments)}`
+        `🕰️ Called aging tool ${toolName} on server ${serverName} with arguments ${JSON.stringify(toolArguments)}`
       );
 
       const { toolOutput, hasAttachments, attachments } = processToolResult(
@@ -153,23 +158,23 @@ export const callToolAction: Action = {
       {
         name: "{{user}}",
         content: {
-          text: "Can you search for information about climate change?",
+          text: "What genes are known to affect lifespan in model organisms?",
         },
       },
       {
         name: "{{assistant}}",
         content: {
-          text: "I'll help you with that request. Let me access the right tool...",
-          actions: ["CALL_MCP_TOOL"],
+          text: "I'll search our aging research databases for genes that affect lifespan in model organisms. Let me check OpenGenes and SynergyAge databases...",
+          actions: ["AGING_RESEARCH"],
         },
       },
       {
         name: "{{assistant}}",
         content: {
-          text: "I found the following information about climate change:\n\nClimate change refers to long-term shifts in temperatures and weather patterns. These shifts may be natural, but since the 1800s, human activities have been the main driver of climate change, primarily due to the burning of fossil fuels like coal, oil, and gas, which produces heat-trapping gases.",
-          actions: ["CALL_MCP_TOOL"],
+          text: "I found extensive data on lifespan-affecting genes from aging research databases:\n\n**Key Longevity Genes:**\n- **daf-2** (C. elegans): Insulin/IGF-1 receptor, 2-fold lifespan extension\n- **age-1** (C. elegans): PI3K catalytic subunit, significant lifespan increase\n- **sir2** (S. cerevisiae): Sirtuin deacetylase, caloric restriction mimetic\n- **foxo** (Drosophila): Transcription factor, stress resistance\n- **p53** (Multiple species): Tumor suppressor, aging modulator\n\n**Synergistic Interactions:**\n- daf-2 + daf-16: Synergistic lifespan extension\n- sir2 + caloric restriction: Enhanced longevity effects\n- foxo + autophagy genes: Improved stress resistance\n\n**Research Context:**\nThese genes are part of conserved aging pathways including insulin/IGF-1 signaling, mTOR, and sirtuins, suggesting potential therapeutic targets for human longevity.",
+          actions: ["AGING_RESEARCH"],
         },
       },
     ],
   ],
-};
+}; 
